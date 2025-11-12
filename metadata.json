@@ -1,0 +1,7 @@
+{
+  "name": "PetConnect",
+  "description": "A social network for pets, allowing users to share stories, find pet-friendly places, report lost pets, and connect with other pet owners.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
