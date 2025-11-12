@@ -1,11 +1,14 @@
 
+
 export enum View {
   Home = 'HOME',
   Map = 'MAP',
-  LostFound = 'LOST_FOUND',
   Messages = 'MESSAGES',
   Profile = 'PROFILE',
   EditProfile = 'EDIT_PROFILE',
+  EditPet = 'EDIT_PET',
+  PetDetail = 'PET_DETAIL',
+  NewGroup = 'NEW_GROUP',
 }
 
 export enum NotificationType {
@@ -13,6 +16,7 @@ export enum NotificationType {
   LostPetUpdate = 'LOST_PET_UPDATE',
   NewFollower = 'NEW_FOLLOWER',
   PostLike = 'POST_LIKE',
+  GroupInvite = 'GROUP_INVITE',
 }
 
 export interface Notification {
@@ -25,6 +29,8 @@ export interface Notification {
       name: string;
       avatar: string;
   };
+  groupId?: string;
+  groupName?: string;
 }
 
 
@@ -58,4 +64,28 @@ export interface Story {
   user: User;
   image: string;
   timestamp: string; // ISO string
+}
+
+export interface Conversation {
+    id: string;
+    name: string;
+    avatar: string;
+    lastMessage: string;
+    time: string;
+    unread: number;
+    isGroup: boolean;
+    members: User[];
+}
+
+export type ReportStatus = 'Lost' | 'Found' | 'Adoption';
+
+export interface Report {
+  id: string;
+  petName: string;
+  status: ReportStatus;
+  location: string;
+  date: string;
+  image: string;
+  breed: string;
+  description?: string;
 }

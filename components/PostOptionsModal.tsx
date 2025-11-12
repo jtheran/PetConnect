@@ -1,13 +1,32 @@
 import React from 'react';
-import { CameraIcon, DocumentReportIcon, XIcon } from './icons';
+import { CameraIcon, DocumentReportIcon, XIcon, UserGroupIcon } from './icons';
 
 interface PostOptionsModalProps {
   onClose: () => void;
   onNewPost: () => void;
   onNewReport: () => void;
+  onNewGroup: () => void;
 }
 
-const PostOptionsModal: React.FC<PostOptionsModalProps> = ({ onClose, onNewPost, onNewReport }) => {
+const OptionButton: React.FC<{
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+  iconBgColor: string;
+  iconTextColor: string;
+}> = ({ onClick, icon, label, iconBgColor, iconTextColor }) => (
+  <button
+    onClick={onClick}
+    className="flex items-center gap-4 w-full p-3 bg-white rounded-xl shadow-sm hover:shadow-md hover:scale-[1.03] transition-all"
+  >
+    <div className={`w-12 h-12 ${iconBgColor} ${iconTextColor} rounded-full flex items-center justify-center`}>
+      {icon}
+    </div>
+    <span className="font-semibold text-slate-700 text-lg">{label}</span>
+  </button>
+);
+
+const PostOptionsModal: React.FC<PostOptionsModalProps> = ({ onClose, onNewPost, onNewReport, onNewGroup }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-end">
       <div className="absolute inset-0 bg-black/40" onClick={onClose}></div>
@@ -18,25 +37,28 @@ const PostOptionsModal: React.FC<PostOptionsModalProps> = ({ onClose, onNewPost,
             <XIcon className="w-6 h-6" />
           </button>
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          <button
-            onClick={onNewPost}
-            className="flex flex-col items-center justify-center gap-2 p-4 bg-white rounded-xl shadow-sm hover:shadow-md hover:scale-105 transition-all"
-          >
-            <div className="w-12 h-12 bg-orange-100 text-orange-500 rounded-full flex items-center justify-center">
-              <CameraIcon className="w-7 h-7" />
-            </div>
-            <span className="font-semibold text-slate-700">New Post</span>
-          </button>
-          <button
-            onClick={onNewReport}
-            className="flex flex-col items-center justify-center gap-2 p-4 bg-white rounded-xl shadow-sm hover:shadow-md hover:scale-105 transition-all"
-          >
-            <div className="w-12 h-12 bg-blue-100 text-blue-500 rounded-full flex items-center justify-center">
-              <DocumentReportIcon className="w-7 h-7" />
-            </div>
-            <span className="font-semibold text-slate-700">New Report</span>
-          </button>
+        <div className="space-y-3">
+            <OptionButton
+                onClick={onNewPost}
+                icon={<CameraIcon className="w-7 h-7" />}
+                label="New Post"
+                iconBgColor="bg-orange-100"
+                iconTextColor="text-orange-500"
+            />
+            <OptionButton
+                onClick={onNewReport}
+                icon={<DocumentReportIcon className="w-7 h-7" />}
+                label="New Report"
+                iconBgColor="bg-blue-100"
+                iconTextColor="text-blue-500"
+            />
+             <OptionButton
+                onClick={onNewGroup}
+                icon={<UserGroupIcon className="w-7 h-7" />}
+                label="New Group"
+                iconBgColor="bg-purple-100"
+                iconTextColor="text-purple-500"
+            />
         </div>
       </div>
       <style>{`

@@ -1,10 +1,12 @@
 import React from 'react';
 import { Notification, NotificationType } from '../types';
-import { ChatBubbleIcon, SearchIcon, HeartIcon, UserPlusIcon } from './icons';
+import { ChatBubbleIcon, SearchIcon, HeartIcon, UserPlusIcon, UserGroupIcon, CheckIcon, XIcon } from './icons';
 
 interface NotificationsPanelProps {
     notifications: Notification[];
     onClose: () => void;
+    onAcceptInvite: (notificationId: string, groupId?: string) => void;
+    onRejectInvite: (notificationId: string) => void;
 }
 
 const NotificationIcon: React.FC<{ type: NotificationType }> = ({ type }) => {
@@ -18,6 +20,8 @@ const NotificationIcon: React.FC<{ type: NotificationType }> = ({ type }) => {
             return <HeartIcon className={`${baseClasses} text-red-500`} />;
         case NotificationType.NewFollower:
             return <UserPlusIcon className={`${baseClasses} text-green-500`} />;
+        case NotificationType.GroupInvite:
+            return <UserGroupIcon className={`${baseClasses} text-purple-500`} />;
         default:
             return null;
     }
@@ -37,7 +41,7 @@ const timeAgo = (dateString: string): string => {
     return `${days}d ago`;
 };
 
-const NotificationsPanel: React.FC<NotificationsPanelProps> = ({ notifications, onClose }) => {
+const NotificationsPanel: React.FC<NotificationsPanelProps> = ({ notifications, onClose, onAcceptInvite, onRejectInvite }) => {
     return (
         <>
             <div className="fixed inset-0 bg-black/30 z-40" onClick={onClose}></div>
@@ -50,14 +54,28 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({ notifications, 
                         {notifications.length > 0 ? (
                             <ul>
                                 {notifications.map(notification => (
-                                    <li key={notification.id} className={`flex items-start gap-4 p-4 ${!notification.isRead ? 'bg-orange-50/50' : 'bg-white'} hover:bg-slate-50 transition-colors border-b border-slate-100`}>
-                                        <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0">
-                                            <NotificationIcon type={notification.type} />
+                                    <li key={notification.id} className={`p-4 ${!notification.isRead ? 'bg-orange-50/50' : 'bg-white'} hover:bg-slate-50 transition-colors border-b border-slate-100`}>
+                                        <div className="flex items-start gap-4">
+                                            <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0">
+                                                <NotificationIcon type={notification.type} />
+                                            </div>
+                                            <div className="flex-grow">
+                                                <p className="text-sm text-slate-700">{notification.text}</p>
+                                                <span className="text-xs text-slate-400 font-semibold">{timeAgo(notification.timestamp)}</span>
+                                            </div>
                                         </div>
-                                        <div className="flex-grow">
-                                            <p className="text-sm text-slate-700">{notification.text}</p>
-                                            <span className="text-xs text-slate-400 font-semibold">{timeAgo(notification.timestamp)}</span>
-                                        </div>
+                                        {notification.type === NotificationType.GroupInvite && (
+                                            <div className="mt-3 flex justify-end gap-2">
+                                                <button onClick={() => onRejectInvite(notification.id)} className="flex items-center gap-1.5 bg-white hover:bg-slate-100 text-slate-600 font-bold py-1.5 px-3 rounded-lg text-xs transition-colors border border-slate-300">
+                                                    <XIcon className="w-4 h-4" />
+                                                    <span>Decline</span>
+                                                </button>
+                                                <button onClick={() => onAcceptInvite(notification.id, notification.groupId)} className="flex items-center gap-1.5 bg-green-500 hover:bg-green-600 text-white font-bold py-1.5 px-3 rounded-lg text-xs transition-colors">
+                                                    <CheckIcon className="w-4 h-4" />
+                                                    <span>Accept</span>
+                                                </button>
+                                            </div>
+                                        )}
                                     </li>
                                 ))}
                             </ul>

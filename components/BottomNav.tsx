@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { View } from '../types';
-import { HomeIcon, MapIcon, PlusCircleIcon, ChatBubbleIcon, UserCircleIcon } from './icons';
+import { HomeIcon, PlusCircleIcon, ChatBubbleIcon, UserCircleIcon, MapIcon } from './icons';
 
 interface BottomNavProps {
   currentView: View;

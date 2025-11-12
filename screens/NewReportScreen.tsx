@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { XIcon, CameraIcon } from '../components/icons';
+import { ReportStatus } from '../types';
 
 interface NewReportScreenProps {
   onClose: () => void;
 }
 
 const NewReportScreen: React.FC<NewReportScreenProps> = ({ onClose }) => {
-  const [reportType, setReportType] = useState<'Lost' | 'Found'>('Lost');
+  const [reportType, setReportType] = useState<ReportStatus>('Lost');
 
   return (
     <div className="fixed inset-0 bg-slate-50 z-50 flex flex-col">
@@ -23,11 +24,14 @@ const NewReportScreen: React.FC<NewReportScreenProps> = ({ onClose }) => {
       </header>
       <main className="flex-grow max-w-md w-full mx-auto p-4 space-y-4 overflow-y-auto">
         <div className="flex bg-slate-200 rounded-lg p-1">
-            <button onClick={() => setReportType('Lost')} className={`w-1/2 py-2 rounded-md text-sm font-semibold transition-colors ${reportType === 'Lost' ? 'bg-white shadow text-orange-600' : 'text-slate-600'}`}>
-                Pet Lost
+            <button onClick={() => setReportType('Lost')} className={`w-1/3 py-2 rounded-md text-sm font-semibold transition-colors ${reportType === 'Lost' ? 'bg-white shadow text-orange-600' : 'text-slate-600'}`}>
+                Lost
             </button>
-            <button onClick={() => setReportType('Found')} className={`w-1/2 py-2 rounded-md text-sm font-semibold transition-colors ${reportType === 'Found' ? 'bg-white shadow text-orange-600' : 'text-slate-600'}`}>
-                Pet Found
+            <button onClick={() => setReportType('Found')} className={`w-1/3 py-2 rounded-md text-sm font-semibold transition-colors ${reportType === 'Found' ? 'bg-white shadow text-orange-600' : 'text-slate-600'}`}>
+                Found
+            </button>
+            <button onClick={() => setReportType('Adoption')} className={`w-1/3 py-2 rounded-md text-sm font-semibold transition-colors ${reportType === 'Adoption' ? 'bg-white shadow text-orange-600' : 'text-slate-600'}`}>
+                Adoption
             </button>
         </div>
 
@@ -37,15 +41,30 @@ const NewReportScreen: React.FC<NewReportScreenProps> = ({ onClose }) => {
         </div>
 
         <div className="space-y-3">
-            <input type="text" placeholder="Pet's Name (if known)" className="w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition" />
-            <input type="text" placeholder="Breed" className="w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition" />
-            <input type="text" placeholder="Last Seen Location" className="w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition" />
-            <input type="date" className="w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition text-slate-500" />
-            <textarea 
-                placeholder="Additional details (colors, collar, etc.)..." 
-                rows={3}
-                className="w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition"
-            ></textarea>
+            {reportType === 'Adoption' ? (
+                <>
+                    <input type="text" placeholder="Pet's Name" className="w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition" />
+                    <input type="text" placeholder="Breed" className="w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition" />
+                     <textarea 
+                        placeholder="Adoption Story (tell us about the pet)..." 
+                        rows={3}
+                        className="w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition"
+                    ></textarea>
+                     <input type="text" placeholder="Contact Info (Email or Phone)" className="w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition" />
+                </>
+            ) : (
+                <>
+                    <input type="text" placeholder="Pet's Name (if known)" className="w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition" />
+                    <input type="text" placeholder="Breed" className="w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition" />
+                    <input type="text" placeholder={reportType === 'Lost' ? 'Last Seen Location' : 'Location Found'} className="w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition" />
+                    <input type="date" className="w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition text-slate-500" />
+                    <textarea 
+                        placeholder="Additional details (colors, collar, etc.)..." 
+                        rows={3}
+                        className="w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition"
+                    ></textarea>
+                </>
+            )}
         </div>
       </main>
     </div>

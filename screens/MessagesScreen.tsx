@@ -1,20 +1,18 @@
-
 import React from 'react';
-import { SearchIcon } from '../components/icons';
+import { SearchIcon, UserGroupIcon } from '../components/icons';
+import { Conversation } from '../types';
 
-const conversations = [
-    { id: 'c1', name: 'Maria & Lucy', avatar: 'https://picsum.photos/seed/user2/100/100', lastMessage: 'Haha, sounds like Lucy!', time: '10m', unread: 2 },
-    { id: 'c2', name: 'Dog Lovers Group', avatar: 'https://picsum.photos/seed/group1/100/100', lastMessage: 'Who is going to the park this weekend?', time: '1h', unread: 0 },
-    { id: 'c3', name: 'John Doe', avatar: 'https://picsum.photos/seed/user3/100/100', lastMessage: 'Thanks for the tip!', time: '3h', unread: 0 },
-    { id: 'c4', name: 'Pet Grooming Tips', avatar: 'https://picsum.photos/seed/group2/100/100', lastMessage: 'Remember to use a soft brush.', time: '1d', unread: 5 },
-];
+interface MessagesScreenProps {
+    conversations: Conversation[];
+    onNewGroup: () => void;
+}
 
-const MessagesScreen: React.FC = () => {
+const MessagesScreen: React.FC<MessagesScreenProps> = ({ conversations, onNewGroup }) => {
     return (
         <div className="p-4">
             <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold text-slate-800">Messages</h2>
-                <button className="text-orange-500 font-bold text-sm">New Chat</button>
+                <button onClick={onNewGroup} className="text-orange-500 font-bold text-sm">New Group</button>
             </div>
             <div className="relative mb-4">
                 <input type="text" placeholder="Search messages..." className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-300 focus:ring-orange-500 focus:border-orange-500" />
@@ -25,7 +23,12 @@ const MessagesScreen: React.FC = () => {
                 {conversations.map(convo => (
                     <li key={convo.id} className="bg-white p-3 rounded-xl flex items-center gap-4 hover:bg-orange-50 transition-colors cursor-pointer">
                         <div className="relative">
-                            <img src={convo.avatar} alt={convo.name} className="w-14 h-14 rounded-full" />
+                            <img src={convo.avatar} alt={convo.name} className="w-14 h-14 rounded-full object-cover" />
+                             {convo.isGroup && (
+                                <div className="absolute -bottom-1 -right-1 bg-blue-500 p-1 rounded-full border-2 border-white">
+                                    <UserGroupIcon className="w-3 h-3 text-white" />
+                                </div>
+                            )}
                             {convo.unread > 0 && <span className="absolute top-0 right-0 w-2 h-2 bg-green-400 rounded-full border-2 border-white"></span>}
                         </div>
                         <div className="flex-grow">

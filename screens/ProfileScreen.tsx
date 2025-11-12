@@ -1,7 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { Pet, User } from '../types';
-import { generatePetBio } from '../services/geminiService';
-import { WandIcon, PencilIcon } from '../components/icons';
+import { PencilIcon } from '../components/icons';
 
 const mockPosts = [
     { id: 'post1', image: 'https://picsum.photos/seed/post1/300/300' },
@@ -11,45 +10,27 @@ const mockPosts = [
     { id: 'post6', image: 'https://picsum.photos/seed/post6/300/300' },
 ];
 
-const PetCard: React.FC<{ pet: Pet, onUpdateBio: (petId: string, newBio: string) => void }> = ({ pet, onUpdateBio }) => {
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState('');
-
-    const handleGenerateBio = useCallback(async () => {
-        setIsLoading(true);
-        setError('');
-        try {
-            const newBio = await generatePetBio(pet.name, pet.breed);
-            onUpdateBio(pet.id, newBio);
-        } catch (err) {
-            setError('Failed to generate bio. Please try again.');
-            console.error(err);
-        } finally {
-            setIsLoading(false);
-        }
-    }, [pet, onUpdateBio]);
-
+const PetCard: React.FC<{ pet: Pet; onEdit: () => void; onView: () => void; }> = ({ pet, onEdit, onView }) => {
     return (
-        <div className="bg-white p-4 rounded-2xl shadow-sm">
-            <div className="flex items-start gap-4">
-                <img src={pet.avatar} alt={pet.name} className="w-20 h-20 rounded-full border-4 border-white shadow-md" />
-                <div className="flex-1">
-                    <h3 className="text-xl font-bold text-slate-800">{pet.name}</h3>
-                    <p className="text-md text-slate-500">{pet.breed}</p>
-                </div>
-                 <button 
-                    onClick={handleGenerateBio} 
-                    disabled={isLoading}
-                    className="p-2 bg-yellow-100 text-yellow-600 rounded-full hover:bg-yellow-200 disabled:opacity-50 disabled:cursor-wait transition-colors">
-                    <WandIcon className="w-5 h-5"/>
-                </button>
+        <div 
+            onClick={onView}
+            className="group relative cursor-pointer bg-white p-3 rounded-xl shadow-sm flex flex-col items-center text-center gap-2 transition-all duration-200 ease-in-out hover:shadow-lg hover:scale-[1.03]"
+        >
+            <img src={pet.avatar} alt={pet.name} className="w-20 h-20 rounded-full object-cover border-4 border-slate-100" />
+            <div>
+                <h4 className="text-md font-bold text-slate-800">{pet.name}</h4>
+                <p className="text-sm text-slate-500">{pet.breed}</p>
             </div>
-            <div className="mt-3">
-                {isLoading && <p className="text-sm text-slate-400 italic">Generating bio...</p>}
-                {error && <p className="text-sm text-red-500">{error}</p>}
-                {pet.bio && !isLoading && <p className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg">{pet.bio}</p>}
-                {!pet.bio && !isLoading && <p className="text-sm text-slate-400 italic">No bio yet. Generate one with AI!</p>}
-            </div>
+            <button 
+                onClick={(e) => {
+                    e.stopPropagation(); // Prevent card's onClick from firing
+                    onEdit();
+                }} 
+                className="absolute top-2 right-2 p-1.5 bg-white/70 text-slate-400 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:text-orange-500"
+                aria-label={`Edit ${pet.name}`}
+            >
+                <PencilIcon className="w-5 h-5" />
+            </button>
         </div>
     );
 }
@@ -57,10 +38,11 @@ const PetCard: React.FC<{ pet: Pet, onUpdateBio: (petId: string, newBio: string)
 interface ProfileScreenProps {
     user: User;
     onEdit: () => void;
+    onEditPet: (pet: Pet) => void;
+    onViewPet: (pet: Pet) => void;
 }
 
-const ProfileScreen: React.FC<ProfileScreenProps> = ({ user: initialUser, onEdit }) => {
-    const [user, setUser] = useState<User>(initialUser);
+const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onEdit, onEditPet, onViewPet }) => {
     const [isFollowing, setIsFollowing] = useState(false);
     const [followerCount, setFollowerCount] = useState(1200);
     const mockFollowingCount = 340;
@@ -71,13 +53,6 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user: initialUser, onEdit
             setFollowerCount(count => newFollowingState ? count + 1 : count - 1);
             return newFollowingState;
         });
-    }, []);
-    
-    const handleUpdatePetBio = useCallback((petId: string, newBio: string) => {
-        setUser(currentUser => ({
-            ...currentUser,
-            pets: currentUser.pets.map(p => p.id === petId ? { ...p, bio: newBio } : p)
-        }));
     }, []);
 
     return (
@@ -118,9 +93,19 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user: initialUser, onEdit
                 </div>
             </div>
 
-            <div className="space-y-4">
-                <h3 className="text-lg font-bold text-slate-700">My Pets</h3>
-                {user.pets.map(pet => <PetCard key={pet.id} pet={pet} onUpdateBio={handleUpdatePetBio}/>)}
+            <div>
+                <h3 className="text-lg font-bold text-slate-700 mb-2">My Pets</h3>
+                <div className="grid grid-cols-2 gap-4">
+                    {user.pets.map((pet, index) => (
+                        <div 
+                            key={pet.id} 
+                            className="animate-fade-in-up"
+                            style={{ animationDelay: `${index * 100}ms`, opacity: 0 }}
+                        >
+                            <PetCard pet={pet} onEdit={() => onEditPet(pet)} onView={() => onViewPet(pet)} />
+                        </div>
+                    ))}
+                </div>
             </div>
 
             <div>
@@ -133,6 +118,21 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user: initialUser, onEdit
                     ))}
                 </div>
             </div>
+            <style>{`
+                @keyframes fadeInUp {
+                    from {
+                        opacity: 0;
+                        transform: translateY(20px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+                .animate-fade-in-up {
+                    animation: fadeInUp 0.5s ease-out forwards;
+                }
+            `}</style>
         </div>
     );
 };
