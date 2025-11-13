@@ -30,9 +30,10 @@ const OptionButton: React.FC<{
 
 const PostOptionsModal: React.FC<PostOptionsModalProps> = ({ onClose, onNewPost, onNewReport, onNewGroup, onNewPet, onNewService }) => {
   return (
-    <div className="fixed inset-0 z-50 flex items-end">
+    <div className="fixed inset-0 z-50 flex items-end md:items-center md:justify-center p-0 md:p-4">
       <div className="absolute inset-0 bg-black/40" onClick={onClose}></div>
-      <div className="relative w-full bg-slate-50 rounded-t-2xl shadow-xl p-4 animate-slide-up">
+      <div className="relative w-full bg-slate-50 rounded-t-2xl shadow-xl p-4 animate-modal-entry
+                      md:max-w-md md:rounded-2xl">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-bold text-slate-800">Create</h3>
           <button onClick={onClose} className="p-2 text-slate-500 hover:bg-slate-200 rounded-full">
@@ -82,7 +83,20 @@ const PostOptionsModal: React.FC<PostOptionsModalProps> = ({ onClose, onNewPost,
           from { transform: translateY(100%); }
           to { transform: translateY(0); }
         }
-        .animate-slide-up { animation: slide-up 0.3s ease-out; }
+        @keyframes fade-in-scale {
+          from { opacity: 0; transform: scale(0.95); }
+          to { opacity: 1; transform: scale(1); }
+        }
+        
+        .animate-modal-entry {
+          animation: slide-up 0.3s ease-out;
+        }
+
+        @media (min-width: 768px) {
+          .animate-modal-entry {
+            animation: fade-in-scale 0.2s ease-out;
+          }
+        }
       `}</style>
     </div>
   );
