@@ -53,7 +53,7 @@ const EditPetScreen: React.FC<EditPetScreenProps> = ({ pet, onUpdate, onCancel }
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="mt-1 w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition"
+                    className="mt-1 w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition text-slate-800"
                 />
             </div>
             <div>
@@ -63,7 +63,7 @@ const EditPetScreen: React.FC<EditPetScreenProps> = ({ pet, onUpdate, onCancel }
                     type="text"
                     value={breed}
                     onChange={(e) => setBreed(e.target.value)}
-                    className="mt-1 w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition"
+                    className="mt-1 w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition text-slate-800"
                 />
             </div>
         </div>

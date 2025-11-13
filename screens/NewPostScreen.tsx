@@ -28,23 +28,24 @@ const NewPostScreen: React.FC<NewPostScreenProps> = ({ onClose, onAddNewPost, pe
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-50 z-50 flex flex-col">
-      <header className="bg-white/80 backdrop-blur-lg sticky top-0 z-20 shadow-sm">
-        <div className="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
+    <div className="fixed inset-0 z-50 flex items-end md:items-center md:justify-center p-0 md:p-4">
+      <div className="absolute inset-0 bg-black/40" onClick={onClose}></div>
+      <div className="relative w-full bg-slate-50 rounded-t-2xl flex flex-col h-[90vh]
+                      md:max-w-lg md:h-auto md:max-h-[90vh] md:rounded-2xl md:shadow-xl animate-modal-entry">
+      <header className="flex-shrink-0 bg-white/80 backdrop-blur-lg z-10 shadow-sm p-3 flex items-center justify-between md:rounded-t-2xl">
           <button onClick={onClose} className="p-2 text-slate-600 hover:bg-slate-100 rounded-full">
-            <XIcon className="w-7 h-7" />
+            <XIcon className="w-6 h-6" />
           </button>
-          <h2 className="text-xl font-bold text-slate-800">New Post</h2>
+          <h2 className="text-lg font-bold text-slate-800">New Post</h2>
           <button 
             onClick={handlePost}
             disabled={!canPost}
-            className="bg-orange-500 text-white font-bold py-2 px-5 rounded-lg text-sm hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-orange-500 text-white font-bold py-1.5 px-4 rounded-lg text-sm hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Post
           </button>
-        </div>
-      </header>
-      <main className="flex-grow max-w-md w-full mx-auto p-4 space-y-4">
+        </header>
+        <main className="flex-grow overflow-y-auto p-4 space-y-4">
         <div 
             onClick={handleImageUpload}
             className="aspect-square w-full bg-slate-200 border-2 border-dashed border-slate-300 rounded-2xl flex flex-col items-center justify-center text-slate-500 cursor-pointer hover:bg-slate-300 transition-colors overflow-hidden"
@@ -63,12 +64,12 @@ const NewPostScreen: React.FC<NewPostScreenProps> = ({ onClose, onAddNewPost, pe
             rows={4}
             value={caption}
             onChange={(e) => setCaption(e.target.value)}
-            className="w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition"
+            className="w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition text-slate-800"
         ></textarea>
         <select 
             value={selectedPetId}
             onChange={(e) => setSelectedPetId(e.target.value)}
-            className="w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition text-slate-600"
+            className="w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition text-slate-800"
         >
             <option value="" disabled>Tag a pet...</option>
             {pets.map(pet => (
@@ -76,6 +77,27 @@ const NewPostScreen: React.FC<NewPostScreenProps> = ({ onClose, onAddNewPost, pe
             ))}
         </select>
       </main>
+    </div>
+      <style>{`
+        @keyframes slide-up {
+          from { transform: translateY(100%); }
+          to { transform: translateY(0); }
+        }
+        @keyframes fade-in-scale {
+          from { opacity: 0; transform: scale(0.95); }
+          to { opacity: 1; transform: scale(1); }
+        }
+        
+        .animate-modal-entry {
+          animation: slide-up 0.3s ease-out;
+        }
+
+        @media (min-width: 768px) {
+          .animate-modal-entry {
+            animation: fade-in-scale 0.2s ease-out;
+          }
+        }
+      `}</style>
     </div>
   );
 };

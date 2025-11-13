@@ -10,19 +10,20 @@ const NewReportScreen: React.FC<NewReportScreenProps> = ({ onClose }) => {
   const [reportType, setReportType] = useState<ReportStatus>('Lost');
 
   return (
-    <div className="fixed inset-0 bg-slate-50 z-50 flex flex-col">
-      <header className="bg-white/80 backdrop-blur-lg sticky top-0 z-20 shadow-sm">
-        <div className="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
+    <div className="fixed inset-0 z-50 flex items-end md:items-center md:justify-center p-0 md:p-4">
+       <div className="absolute inset-0 bg-black/40" onClick={onClose}></div>
+       <div className="relative w-full bg-slate-50 rounded-t-2xl flex flex-col h-[90vh]
+                      md:max-w-lg md:h-auto md:max-h-[90vh] md:rounded-2xl md:shadow-xl animate-modal-entry">
+      <header className="flex-shrink-0 bg-white/80 backdrop-blur-lg z-10 shadow-sm p-3 flex items-center justify-between md:rounded-t-2xl">
           <button onClick={onClose} className="p-2 text-slate-600 hover:bg-slate-100 rounded-full">
-            <XIcon className="w-7 h-7" />
+            <XIcon className="w-6 h-6" />
           </button>
-          <h2 className="text-xl font-bold text-slate-800">New Report</h2>
-          <button className="bg-orange-500 text-white font-bold py-2 px-5 rounded-lg text-sm hover:bg-orange-600 transition-colors">
+          <h2 className="text-lg font-bold text-slate-800">New Report</h2>
+          <button className="bg-orange-500 text-white font-bold py-1.5 px-4 rounded-lg text-sm hover:bg-orange-600 transition-colors">
             Submit
           </button>
-        </div>
-      </header>
-      <main className="flex-grow max-w-md w-full mx-auto p-4 space-y-4 overflow-y-auto">
+        </header>
+        <main className="flex-grow overflow-y-auto p-4 space-y-4">
         <div className="flex bg-slate-200 rounded-lg p-1">
             <button onClick={() => setReportType('Lost')} className={`w-1/3 py-2 rounded-md text-sm font-semibold transition-colors ${reportType === 'Lost' ? 'bg-white shadow text-orange-600' : 'text-slate-600'}`}>
                 Lost
@@ -43,30 +44,51 @@ const NewReportScreen: React.FC<NewReportScreenProps> = ({ onClose }) => {
         <div className="space-y-3">
             {reportType === 'Adoption' ? (
                 <>
-                    <input type="text" placeholder="Pet's Name" className="w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition" />
-                    <input type="text" placeholder="Breed" className="w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition" />
+                    <input type="text" placeholder="Pet's Name" className="w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition text-slate-800" />
+                    <input type="text" placeholder="Breed" className="w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition text-slate-800" />
                      <textarea 
                         placeholder="Adoption Story (tell us about the pet)..." 
                         rows={3}
-                        className="w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition"
+                        className="w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition text-slate-800"
                     ></textarea>
-                     <input type="text" placeholder="Contact Info (Email or Phone)" className="w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition" />
+                     <input type="text" placeholder="Contact Info (Email or Phone)" className="w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition text-slate-800" />
                 </>
             ) : (
                 <>
-                    <input type="text" placeholder="Pet's Name (if known)" className="w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition" />
-                    <input type="text" placeholder="Breed" className="w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition" />
-                    <input type="text" placeholder={reportType === 'Lost' ? 'Last Seen Location' : 'Location Found'} className="w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition" />
-                    <input type="date" className="w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition text-slate-500" />
+                    <input type="text" placeholder="Pet's Name (if known)" className="w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition text-slate-800" />
+                    <input type="text" placeholder="Breed" className="w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition text-slate-800" />
+                    <input type="text" placeholder={reportType === 'Lost' ? 'Last Seen Location' : 'Location Found'} className="w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition text-slate-800" />
+                    <input type="date" className="w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition text-slate-800" />
                     <textarea 
                         placeholder="Additional details (colors, collar, etc.)..." 
                         rows={3}
-                        className="w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition"
+                        className="w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition text-slate-800"
                     ></textarea>
                 </>
             )}
         </div>
       </main>
+    </div>
+      <style>{`
+        @keyframes slide-up {
+          from { transform: translateY(100%); }
+          to { transform: translateY(0); }
+        }
+        @keyframes fade-in-scale {
+          from { opacity: 0; transform: scale(0.95); }
+          to { opacity: 1; transform: scale(1); }
+        }
+        
+        .animate-modal-entry {
+          animation: slide-up 0.3s ease-out;
+        }
+
+        @media (min-width: 768px) {
+          .animate-modal-entry {
+            animation: fade-in-scale 0.2s ease-out;
+          }
+        }
+      `}</style>
     </div>
   );
 };

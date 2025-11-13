@@ -4,20 +4,25 @@ import { XIcon, CameraIcon } from '../components/icons';
 
 interface EditProfileScreenProps {
   user: User;
-  onUpdate: (name: string, avatar: string) => void;
+  onUpdate: (updatedData: Partial<User>) => void;
   onCancel: () => void;
 }
 
 const EditProfileScreen: React.FC<EditProfileScreenProps> = ({ user, onUpdate, onCancel }) => {
   const [name, setName] = useState(user.name);
   const [avatar, setAvatar] = useState(user.avatar);
+  const [bio, setBio] = useState(user.bio || '');
+  const [location, setLocation] = useState(user.location || '');
+  const [email, setEmail] = useState(user.email || '');
+  const [phone, setPhone] = useState(user.phone || '');
+
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
 
   const handleSave = () => {
-    onUpdate(name, avatar);
+    onUpdate({ name, avatar, bio, location, email, phone });
   };
 
   const handleChangeAvatar = () => {
@@ -26,7 +31,6 @@ const EditProfileScreen: React.FC<EditProfileScreenProps> = ({ user, onUpdate, o
   };
 
   const openCamera = async () => {
-    // Make sure to stop any existing stream before starting a new one
     if (stream) {
       stream.getTracks().forEach(track => track.stop());
     }
@@ -41,8 +45,6 @@ const EditProfileScreen: React.FC<EditProfileScreenProps> = ({ user, onUpdate, o
   };
 
   const closeCamera = () => {
-    // The useEffect cleanup hook will handle stopping the stream tracks.
-    // We just need to nullify the stream state here.
     setStream(null);
     setIsCameraOpen(false);
   };
@@ -67,9 +69,6 @@ const EditProfileScreen: React.FC<EditProfileScreenProps> = ({ user, onUpdate, o
     if (stream && videoRef.current) {
       videoRef.current.srcObject = stream;
     }
-
-    // Cleanup effect: This function will be called when the component unmounts
-    // or when the stream state changes. It ensures the camera is turned off.
     return () => {
       if (stream) {
         stream.getTracks().forEach(track => track.stop());
@@ -106,15 +105,57 @@ const EditProfileScreen: React.FC<EditProfileScreenProps> = ({ user, onUpdate, o
                 </button>
             </div>
         </div>
-        <div className="space-y-2">
-            <label htmlFor="name" className="text-sm font-semibold text-slate-600 px-1">Name</label>
-            <input 
-                id="name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition"
-            />
+        <div className="space-y-4">
+            <div>
+                <label htmlFor="name" className="text-sm font-semibold text-slate-600 px-1">Name</label>
+                <input 
+                    id="name"
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="mt-1 w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition text-slate-800"
+                />
+            </div>
+             <div>
+                <label htmlFor="bio" className="text-sm font-semibold text-slate-600 px-1">Bio</label>
+                <textarea 
+                    id="bio"
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                    rows={3}
+                    className="mt-1 w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition text-slate-800"
+                ></textarea>
+            </div>
+             <div>
+                <label htmlFor="location" className="text-sm font-semibold text-slate-600 px-1">Location</label>
+                <input 
+                    id="location"
+                    type="text"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    className="mt-1 w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition text-slate-800"
+                />
+            </div>
+             <div>
+                <label htmlFor="email" className="text-sm font-semibold text-slate-600 px-1">Email</label>
+                <input 
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="mt-1 w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition text-slate-800"
+                />
+            </div>
+             <div>
+                <label htmlFor="phone" className="text-sm font-semibold text-slate-600 px-1">Phone</label>
+                <input 
+                    id="phone"
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="mt-1 w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition text-slate-800"
+                />
+            </div>
         </div>
       </main>
       

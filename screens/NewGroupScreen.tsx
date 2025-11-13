@@ -67,7 +67,7 @@ const NewGroupScreen: React.FC<NewGroupScreenProps> = ({ users, onCancel, onCrea
             placeholder="Group Name"
             value={groupName}
             onChange={(e) => setGroupName(e.target.value)}
-            className="w-full p-3 mb-4 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition"
+            className="w-full p-3 mb-4 bg-white border border-slate-300 rounded-xl focus:ring-orange-500 focus:border-orange-500 transition text-slate-800"
         />
 
         <h3 className="font-bold text-slate-700 mb-2 px-1">Invite Members</h3>

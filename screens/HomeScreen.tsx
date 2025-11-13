@@ -1,16 +1,15 @@
-import React, { useState } from 'react';
-import { Post, Story, Report, ReportStatus } from '../types';
-import { HeartIcon, CommentIcon, ShareIcon } from '../components/icons';
+import React, { useState, useRef, useEffect } from 'react';
+import { Post, Story, Report, ReportStatus, User } from '../types';
+import { HeartIcon, CommentIcon, ShareIcon, TrashIcon } from '../components/icons';
 
-const mockReports: Report[] = [
-    { id: 'lf1', petName: 'Charlie', status: 'Lost', location: 'Downtown Park', date: 'Oct 28, 2023', image: 'https://picsum.photos/seed/charlie/200/200', breed: 'Beagle' },
-    { id: 'lf2', petName: 'Unknown', status: 'Found', location: 'Near Maple St.', date: 'Oct 27, 2023', image: 'https://picsum.photos/seed/found1/200/200', breed: 'Labrador Mix' },
-    { id: 'ad1', petName: 'Whiskers', status: 'Adoption', location: 'City Shelter', date: 'Ready Now', image: 'https://picsum.photos/seed/whiskers/200/200', breed: 'Tabby Cat', description: 'A friendly and playful cat looking for a forever home. Loves sunny spots and chasing strings.' },
-    { id: 'lf3', petName: 'Bella', status: 'Lost', location: 'Oakwood Forest', date: 'Oct 25, 2023', image: 'https://picsum.photos/seed/bella/200/200', breed: 'Husky' },
-    { id: 'ad2', petName: 'Rocky', status: 'Adoption', location: 'Private Foster', date: 'Ready Now', image: 'https://picsum.photos/seed/rocky/200/200', breed: 'Boxer Mix', description: 'Energetic and loving dog, great with kids and other pets. Fully house-trained.' },
-];
-
-const ReportCard: React.FC<{ report: Report }> = ({ report }) => {
+const ReportCard: React.FC<{ 
+    report: Report; 
+    currentUser: User; 
+    onDelete: (reportId: string) => void; 
+    isLiked: boolean;
+    onLike: () => void;
+    onOpenComments: () => void;
+}> = ({ report, currentUser, onDelete, isLiked, onLike, onOpenComments }) => {
     const getStatusStyles = () => {
         switch (report.status) {
             case 'Lost': return 'bg-red-100 text-red-700';
@@ -21,24 +20,53 @@ const ReportCard: React.FC<{ report: Report }> = ({ report }) => {
     };
 
     return (
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden flex gap-4 p-3">
-            <img src={report.image} alt={report.petName} className="w-28 h-28 object-cover rounded-xl flex-shrink-0" />
-            <div className="flex flex-col flex-grow">
-                <span className={`px-3 py-1 text-xs font-bold rounded-full self-start ${getStatusStyles()}`}>
-                    {report.status}
-                </span>
-                <h3 className="text-lg font-bold text-slate-800 mt-1">{report.petName}</h3>
-                <p className="text-sm text-slate-600 font-semibold">{report.breed}</p>
-                 {report.description && <p className="text-xs text-slate-500 mt-1 line-clamp-2">{report.description}</p>}
-                <p className="text-xs text-slate-400 mt-auto pt-1">{report.location} - {report.date}</p>
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden flex flex-col">
+            <div className="relative group flex gap-4 p-3">
+                <img src={report.image} alt={report.petName} className="w-28 h-28 object-cover rounded-xl flex-shrink-0" />
+                <div className="flex flex-col flex-grow">
+                    <span className={`px-3 py-1 text-xs font-bold rounded-full self-start ${getStatusStyles()}`}>
+                        {report.status}
+                    </span>
+                    <h3 className="text-lg font-bold text-slate-800 mt-1">{report.petName}</h3>
+                    <p className="text-sm text-slate-600 font-semibold">{report.breed}</p>
+                     {report.description && <p className="text-xs text-slate-500 mt-1 line-clamp-2">{report.description}</p>}
+                    <p className="text-xs text-slate-400 mt-auto pt-1">{report.location} - {report.date}</p>
+                </div>
+                 {report.user?.id === currentUser.id && (
+                    <button 
+                        onClick={() => onDelete(report.id)} 
+                        className="absolute top-2 right-2 p-1.5 bg-white/70 text-slate-400 rounded-full opacity-0 group-hover:opacity-100 transition-all hover:bg-red-500 hover:text-white"
+                        aria-label={`Delete report for ${report.petName}`}
+                    >
+                        <TrashIcon className="w-5 h-5" />
+                    </button>
+                )}
+            </div>
+            <div className="border-t border-slate-100 px-4 py-2 flex justify-start gap-6">
+                 <button onClick={onLike} className={`flex items-center gap-2 transition-colors ${isLiked ? 'text-red-500' : 'text-slate-500 hover:text-red-500'}`}>
+                    <HeartIcon isLiked={isLiked} className="w-5 h-5"/>
+                    <span className="font-semibold text-sm">{report.likes}</span>
+                </button>
+                <button onClick={onOpenComments} className="flex items-center gap-2 text-slate-500 hover:text-blue-500 transition-colors">
+                    <CommentIcon className="w-5 h-5"/>
+                    <span className="font-semibold text-sm">{report.comments.length}</span>
+                </button>
             </div>
         </div>
     );
 }
 
-const ReportsSection: React.FC<{ onNewReport: () => void }> = ({ onNewReport }) => {
+const ReportsSection: React.FC<{ 
+    onNewReport: () => void; 
+    reports: Report[]; 
+    currentUser: User; 
+    onDeleteReport: (reportId: string) => void;
+    likedItems: { reports: Set<string> };
+    onLike: (reportId: string) => void;
+    onOpenComments: (report: Report) => void;
+}> = ({ onNewReport, reports, currentUser, onDeleteReport, likedItems, onLike, onOpenComments }) => {
     const [activeTab, setActiveTab] = useState<ReportStatus>('Lost');
-    const filteredReports = mockReports.filter(r => r.status === activeTab);
+    const filteredReports = reports.filter(r => r.status === activeTab);
 
     return (
         <div className="p-4">
@@ -61,7 +89,17 @@ const ReportsSection: React.FC<{ onNewReport: () => void }> = ({ onNewReport }) 
 
             <div className="space-y-4">
                 {filteredReports.length > 0 ? (
-                    filteredReports.map(report => <ReportCard key={report.id} report={report} />)
+                    filteredReports.map(report => (
+                        <ReportCard 
+                            key={report.id} 
+                            report={report} 
+                            currentUser={currentUser} 
+                            onDelete={onDeleteReport}
+                            isLiked={likedItems.reports.has(report.id)}
+                            onLike={() => onLike(report.id)}
+                            onOpenComments={() => onOpenComments(report)}
+                        />
+                    ))
                 ) : (
                     <p className="text-center text-slate-500 pt-8">No {activeTab.toLowerCase()} pets reported here.</p>
                 )}
@@ -100,7 +138,7 @@ const PostCard: React.FC<{
                     </button>
                     <button onClick={onComment} className="flex items-center gap-2 text-slate-600 hover:text-blue-500 transition-colors">
                         <CommentIcon className="w-6 h-6"/>
-                        <span className="font-semibold">{post.comments}</span>
+                        <span className="font-semibold">{post.comments.length}</span>
                     </button>
                     <button onClick={onShare} className="flex items-center gap-2 text-slate-600 hover:text-green-500 transition-colors">
                         <ShareIcon className="w-6 h-6"/>
@@ -124,13 +162,71 @@ const StoryAvatar: React.FC<{ story: Story; onClick: () => void }> = ({ story, o
 
 
 const StoryReel: React.FC<{ stories: Story[]; onOpenStory: (story: Story) => void }> = ({ stories, onOpenStory }) => {
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
+    const [canScrollLeft, setCanScrollLeft] = useState(false);
+    const [canScrollRight, setCanScrollRight] = useState(true);
+
+    const handleScroll = () => {
+        if (scrollContainerRef.current) {
+            const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+            setCanScrollLeft(scrollLeft > 5);
+            setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 5);
+        }
+    };
+
+    const scroll = (direction: 'left' | 'right') => {
+        if (scrollContainerRef.current) {
+            const scrollAmount = scrollContainerRef.current.clientWidth * 0.8;
+            scrollContainerRef.current.scrollBy({
+                left: direction === 'left' ? -scrollAmount : scrollAmount,
+                behavior: 'smooth',
+            });
+        }
+    };
+
+    useEffect(() => {
+        const container = scrollContainerRef.current;
+        if (container) {
+            handleScroll(); // Initial check
+            container.addEventListener('scroll', handleScroll);
+            const resizeObserver = new ResizeObserver(handleScroll);
+            resizeObserver.observe(container);
+
+            return () => {
+                container.removeEventListener('scroll', handleScroll);
+                resizeObserver.unobserve(container);
+            };
+        }
+    }, [stories]);
+
     return (
-        <div className="bg-slate-50/80 border-b border-slate-200 px-4 py-3">
-            <div className="flex gap-4 overflow-x-auto pb-2 -mb-2 scrollbar-hide">
+        <div className="relative group bg-slate-50/80 border-b border-slate-200 px-4 py-3">
+             {canScrollLeft && (
+                <button 
+                    onClick={() => scroll('left')}
+                    className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white/80 rounded-full shadow-md items-center justify-center hidden md:flex opacity-0 group-hover:opacity-100 transition-opacity"
+                    aria-label="Scroll left"
+                >
+                    <svg className="w-6 h-6 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                </button>
+            )}
+            <div 
+                ref={scrollContainerRef}
+                className="flex gap-4 overflow-x-auto pb-2 -mb-2 scrollbar-hide"
+            >
                 {stories.map(story => (
                     <StoryAvatar key={story.id} story={story} onClick={() => onOpenStory(story)} />
                 ))}
             </div>
+             {canScrollRight && (
+                 <button 
+                    onClick={() => scroll('right')}
+                    className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white/80 rounded-full shadow-md items-center justify-center hidden md:flex opacity-0 group-hover:opacity-100 transition-opacity"
+                    aria-label="Scroll right"
+                >
+                    <svg className="w-6 h-6 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                </button>
+            )}
             <style>{`.scrollbar-hide::-webkit-scrollbar { display: none; } .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }`}</style>
         </div>
     );
@@ -138,16 +234,19 @@ const StoryReel: React.FC<{ stories: Story[]; onOpenStory: (story: Story) => voi
 
 interface HomeScreenProps {
   posts: Post[];
-  likedPosts: Set<string>;
-  onLike: (postId: string) => void;
-  onComment: (postId: string) => void;
+  likedItems: { posts: Set<string>, reports: Set<string> };
+  onLike: (itemId: string, itemType: 'post' | 'report' | 'service') => void;
+  onOpenComments: (item: Post | Report, type: 'post' | 'report') => void;
   onShare: (post: Post) => void;
   stories: Story[];
   onOpenStory: (story: Story) => void;
   onNewReport: () => void;
+  reports: Report[];
+  currentUser: User;
+  onDeleteReport: (reportId: string) => void;
 }
 
-const HomeScreen: React.FC<HomeScreenProps> = ({ posts, likedPosts, onLike, onComment, onShare, stories, onOpenStory, onNewReport }) => {
+const HomeScreen: React.FC<HomeScreenProps> = ({ posts, likedItems, onLike, onOpenComments, onShare, stories, onOpenStory, onNewReport, reports, currentUser, onDeleteReport }) => {
   const [activeTab, setActiveTab] = useState<'news' | 'reports'>('news');
 
   return (
@@ -169,9 +268,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ posts, likedPosts, onLike, onCo
                         <PostCard 
                           key={post.id} 
                           post={post}
-                          isLiked={likedPosts.has(post.id)}
-                          onLike={() => onLike(post.id)}
-                          onComment={() => onComment(post.id)}
+                          isLiked={likedItems.posts.has(post.id)}
+                          onLike={() => onLike(post.id, 'post')}
+                          onComment={() => onOpenComments(post, 'post')}
                           onShare={() => onShare(post)}
                         />
                     ))}
@@ -180,7 +279,15 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ posts, likedPosts, onLike, onCo
         )}
 
         {activeTab === 'reports' && (
-            <ReportsSection onNewReport={onNewReport} />
+            <ReportsSection 
+                onNewReport={onNewReport} 
+                reports={reports} 
+                currentUser={currentUser} 
+                onDeleteReport={onDeleteReport}
+                likedItems={likedItems}
+                onLike={(reportId) => onLike(reportId, 'report')}
+                onOpenComments={(report) => onOpenComments(report, 'report')}
+            />
         )}
     </div>
   );

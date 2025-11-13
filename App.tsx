@@ -6,7 +6,7 @@ import MessagesScreen from './screens/MessagesScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import BottomNav from './components/BottomNav';
 import { PawPrintIcon, BellIcon } from './components/icons';
-import { View, Notification, NotificationType, Post, User, Pet, Story, Conversation, Service, ServiceType } from './types';
+import { View, Notification, NotificationType, Post, User, Pet, Story, Conversation, Service, ServiceType, Report, Comment, Location, Message } from './types';
 import NotificationsPanel from './components/NotificationsPanel';
 import PostOptionsModal from './components/PostOptionsModal';
 import NewPostScreen from './screens/NewPostScreen';
@@ -18,6 +18,10 @@ import PetDetailScreen from './screens/PetDetailScreen';
 import NewGroupScreen from './screens/NewGroupScreen';
 import NewPetScreen from './screens/NewPetScreen';
 import NewServiceScreen from './screens/NewServiceScreen';
+import ConfirmationModal from './components/ConfirmationModal';
+import EditServiceScreen from './screens/EditServiceScreen';
+import CommentModal from './components/CommentModal';
+import ChatScreen from './screens/ChatScreen';
 
 const mockNotificationsData: Notification[] = [
   { id: 'n1', type: NotificationType.NewMessage, text: 'Maria sent you a message about Lucy.', timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(), isRead: false, relatedUser: { name: 'Maria', avatar: 'https://picsum.photos/seed/user2/100/100' } },
@@ -33,6 +37,10 @@ const initialUser: User = {
         { id: 'p1', name: 'Buddy', breed: 'Golden Retriever', avatar: 'https://picsum.photos/seed/buddy/100/100', bio: 'Professional good boy and stick enthusiast. My hobbies include napping, chasing squirrels, and getting belly rubs.' },
         { id: 'p3', name: 'Max', breed: 'German Shepherd', avatar: 'https://picsum.photos/seed/max/100/100' },
     ],
+    bio: 'Just a pet lover with my two best friends, Buddy and Max. Always looking for new trails to explore and new friends to make!',
+    location: 'Petville, USA',
+    email: 'alex.j@example.com',
+    phone: '555-123-4567',
 };
 
 const allUsers: User[] = [
@@ -44,9 +52,9 @@ const allUsers: User[] = [
 ];
 
 const initialMockPosts: Post[] = [
-    { id: 'post1', user: allUsers[0], pet: allUsers[0].pets[0], image: 'https://picsum.photos/seed/post1/600/600', caption: 'Enjoying the sun in the park! ☀️', likes: 125, comments: 12 },
-    { id: 'post2', user: allUsers[1], pet: allUsers[1].pets[0], image: 'https://picsum.photos/seed/post2/600/600', caption: 'Nap time is the best time. 😴', likes: 230, comments: 34 },
-    { id: 'post3', user: allUsers[0], pet: allUsers[0].pets[1], image: 'https://picsum.photos/seed/post3/600/600', caption: 'Ready for an adventure!', likes: 98, comments: 5 },
+    { id: 'post1', user: allUsers[0], pet: allUsers[0].pets[0], image: 'https://picsum.photos/seed/post1/600/600', caption: 'Enjoying the sun in the park! ☀️', likes: 125, comments: [] },
+    { id: 'post2', user: allUsers[1], pet: allUsers[1].pets[0], image: 'https://picsum.photos/seed/post2/600/600', caption: 'Nap time is the best time. 😴', likes: 230, comments: [] },
+    { id: 'post3', user: allUsers[0], pet: allUsers[0].pets[1], image: 'https://picsum.photos/seed/post3/600/600', caption: 'Ready for an adventure!', likes: 98, comments: [] },
 ];
 
 const mockStoriesData: Story[] = [
@@ -58,9 +66,15 @@ const mockStoriesData: Story[] = [
 ];
 
 const initialConversations: Conversation[] = [
-    { id: 'c1', name: 'Maria & Lucy', avatar: 'https://picsum.photos/seed/user2/100/100', lastMessage: 'Haha, sounds like Lucy!', time: '10m', unread: 2, isGroup: false, members: [allUsers[0], allUsers[1]] },
-    { id: 'c2', name: 'Dog Lovers Group', avatar: 'https://picsum.photos/seed/group1/100/100', lastMessage: 'Who is going to the park this weekend?', time: '1h', unread: 0, isGroup: true, members: [allUsers[0], allUsers[2]] },
-    { id: 'c3', name: 'John Doe', avatar: 'https://picsum.photos/seed/user3/100/100', lastMessage: 'Thanks for the tip!', time: '3h', unread: 0, isGroup: false, members: [allUsers[0], allUsers[2]] },
+    { id: 'c1', name: 'Maria & Lucy', avatar: 'https://picsum.photos/seed/user2/100/100', lastMessage: 'Haha, sounds like Lucy!', time: '10m', unread: 2, isGroup: false, members: [allUsers[0], allUsers[1]], messages: [
+        { id: 'm1', user: allUsers[1], text: 'Hey, how is Buddy doing?', timestamp: new Date(Date.now() - 12 * 60 * 1000).toISOString() },
+        { id: 'm2', user: allUsers[0], text: 'He\'s great! We just came back from the park.', timestamp: new Date(Date.now() - 11 * 60 * 1000).toISOString() },
+        { id: 'm3', user: allUsers[1], text: 'Haha, sounds like Lucy!', timestamp: new Date(Date.now() - 10 * 60 * 1000).toISOString() },
+    ]},
+    { id: 'c2', name: 'Dog Lovers Group', avatar: 'https://picsum.photos/seed/group1/100/100', lastMessage: 'Who is going to the park this weekend?', time: '1h', unread: 0, isGroup: true, members: [allUsers[0], allUsers[2]], messages: [
+        { id: 'm4', user: allUsers[2], text: 'Who is going to the park this weekend?', timestamp: new Date(Date.now() - 60 * 60 * 1000).toISOString() },
+    ]},
+    { id: 'c3', name: 'John Doe', avatar: 'https://picsum.photos/seed/user3/100/100', lastMessage: 'Thanks for the tip!', time: '3h', unread: 0, isGroup: false, members: [allUsers[0], allUsers[2]], messages: [] },
 ];
 
 const initialServices: Service[] = [
@@ -72,7 +86,9 @@ const initialServices: Service[] = [
         price: '$25 / hour',
         type: ServiceType.Service,
         image: 'https://picsum.photos/seed/walking/600/400',
-        address: '100 Good Boy Lane, Petville'
+        address: '100 Good Boy Lane, Petville',
+        likes: 45,
+        comments: [],
     },
     {
         id: 'serv2',
@@ -82,12 +98,43 @@ const initialServices: Service[] = [
         price: '$15',
         type: ServiceType.Product,
         image: 'https://picsum.photos/seed/bandana/600/400',
-        address: 'Online Store, ships from Petville'
+        address: 'Online Store, ships from Petville',
+        likes: 82,
+        comments: [],
     }
 ];
 
+const initialMockReports: Report[] = [
+    { id: 'lf1', user: allUsers[1], petName: 'Charlie', status: 'Lost', location: 'Downtown Park', date: 'Oct 28, 2023', image: 'https://picsum.photos/seed/charlie/200/200', breed: 'Beagle', likes: 15, comments: [] },
+    { id: 'lf2', user: allUsers[2], petName: 'Unknown', status: 'Found', location: 'Near Maple St.', date: 'Oct 27, 2023', image: 'https://picsum.photos/seed/found1/200/200', breed: 'Labrador Mix', likes: 22, comments: [] },
+    { id: 'ad1', user: initialUser, petName: 'Whiskers', status: 'Adoption', location: 'City Shelter', date: 'Ready Now', image: 'https://picsum.photos/seed/whiskers/200/200', breed: 'Tabby Cat', description: 'A friendly and playful cat looking for a forever home. Loves sunny spots and chasing strings.', likes: 50, comments: [] },
+    { id: 'lf3', user: allUsers[3], petName: 'Bella', status: 'Lost', location: 'Oakwood Forest', date: 'Oct 25, 2023', image: 'https://picsum.photos/seed/bella/200/200', breed: 'Husky', likes: 8, comments: [] },
+    { id: 'ad2', user: initialUser, petName: 'Rocky', status: 'Adoption', location: 'Private Foster', date: 'Ready Now', image: 'https://picsum.photos/seed/rocky/200/200', breed: 'Boxer Mix', description: 'Energetic and loving dog, great with kids and other pets. Fully house-trained.', likes: 34, comments: [] },
+];
+
+const initialLocations: Location[] = [
+    { id: 'p1', name: 'Paws & Play Park', category: 'Dog Park', distance: '0.5 miles', address: '123 Bark Ave, Petville', image: 'https://picsum.photos/seed/park/400/200', likes: 152, comments: [], isBusinessService: false },
+    { id: 'p2', name: 'The Purrfect Cup', category: 'Cat Cafe', distance: '1.8 miles', address: '456 Meow St, Petville', image: 'https://picsum.photos/seed/cafe/400/200', likes: 310, comments: [], isBusinessService: false },
+    { id: 'p3', name: 'Sunny Paws Patio', category: 'Restaurant', distance: '2.1 miles', address: '789 Tailwag Rd, Petville', image: 'https://picsum.photos/seed/patio/400/200', likes: 245, comments: [], isBusinessService: false },
+    { id: 's1', name: 'The Groom Room', category: 'Grooming', distance: '1.2 miles', address: '101 Fluffy Blvd, Petville', image: 'https://picsum.photos/seed/groom/400/200', likes: 98, comments: [], isBusinessService: true },
+    { id: 's2', name: 'Healthy Paws Vet', category: 'Veterinarian', distance: '2.5 miles', address: '202 Fetch Ln, Petville', image: 'https://picsum.photos/seed/vet/400/200', likes: 120, comments: [], isBusinessService: true },
+    { id: 's3', name: 'PetSmart', category: 'Pet Store', distance: '3.1 miles', address: '303 Chew Toy Cres, Petville', image: 'https://picsum.photos/seed/store/400/200', likes: 450, comments: [], isBusinessService: true },
+];
 
 type ActiveModal = 'none' | 'options' | 'post' | 'report' | 'new_pet' | 'new_service';
+type ItemType = 'post' | 'report' | 'service' | 'location';
+
+type ConfirmationState = {
+    isOpen: boolean;
+    message: string;
+    confirmText?: string;
+    onConfirm: () => void;
+};
+
+type CommentingState = {
+    type: ItemType;
+    item: Post | Report | Service | Location;
+} | null;
 
 const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -98,7 +145,16 @@ const App: React.FC = () => {
   const [activeModal, setActiveModal] = useState<ActiveModal>('none');
 
   const [posts, setPosts] = useState<Post[]>(initialMockPosts);
-  const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
+  const [reports, setReports] = useState<Report[]>(initialMockReports);
+  const [services, setServices] = useState<Service[]>(initialServices);
+  const [locations, setLocations] = useState<Location[]>(initialLocations);
+  
+  const [likedItems, setLikedItems] = useState({
+      posts: new Set<string>(),
+      reports: new Set<string>(),
+      services: new Set<string>(),
+      locations: new Set<string>(),
+  });
 
   const [stories, setStories] = useState<Story[]>(mockStoriesData);
   const [activeStory, setActiveStory] = useState<Story | null>(null);
@@ -107,10 +163,34 @@ const App: React.FC = () => {
   const [viewingPet, setViewingPet] = useState<Pet | null>(null);
 
   const [conversations, setConversations] = useState<Conversation[]>(initialConversations);
-  const [services, setServices] = useState<Service[]>(initialServices);
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+  const [editingService, setEditingService] = useState<Service | null>(null);
+
+  const [confirmation, setConfirmation] = useState<ConfirmationState>({ isOpen: false, message: '', onConfirm: () => {} });
+  const [commentingItem, setCommentingItem] = useState<CommentingState>(null);
+
+  const handleRequestDelete = (message: string, onConfirm: () => void, confirmText?: string) => {
+    setConfirmation({ isOpen: true, message, onConfirm, confirmText });
+  };
+  const closeConfirmation = () => {
+    setConfirmation({ isOpen: false, message: '', onConfirm: () => {} });
+  };
 
   const handleLogin = useCallback(() => {
     setIsLoggedIn(true);
+  }, []);
+  
+  const handleLogout = useCallback(() => {
+      setIsLoggedIn(false);
+      setCurrentView(View.Home);
+  }, []);
+
+  const handleDeleteAccount = useCallback(() => {
+      alert('Account deleted. Thank you for using PetConnect!');
+      setIsLoggedIn(false);
+      setCurrentUser(initialUser);
+      setCurrentView(View.Home);
+      closeConfirmation();
   }, []);
   
   const handleToggleNotifications = useCallback(() => {
@@ -124,7 +204,11 @@ const App: React.FC = () => {
   
   const hasUnreadNotifications = useMemo(() => notifications.some(n => !n.isRead), [notifications]);
 
-  const handleCloseModals = useCallback(() => setActiveModal('none'), []);
+  const handleCloseModals = useCallback(() => {
+      setActiveModal('none');
+      setCommentingItem(null);
+  }, []);
+
   const handleOpenOptions = useCallback(() => setActiveModal('options'), []);
   const handleOpenNewPost = useCallback(() => { setActiveModal('post') }, []);
   const handleOpenNewReport = useCallback(() => { setActiveModal('report') }, []);
@@ -135,33 +219,65 @@ const App: React.FC = () => {
     setCurrentView(View.NewGroup);
   }, []);
 
-  const handleLike = useCallback((postId: string) => {
-    const isAlreadyLiked = likedPosts.has(postId);
-    setPosts(currentPosts =>
-      currentPosts.map(post =>
-        post.id === postId ? { ...post, likes: post.likes + (isAlreadyLiked ? -1 : 1) } : post
-      )
-    );
+  const handleLike = useCallback((itemId: string, itemType: ItemType) => {
+    const stateKey = `${itemType}s` as keyof typeof likedItems;
 
-    setLikedPosts(currentLikedPosts => {
-      const newLikedPosts = new Set(currentLikedPosts);
-      if (isAlreadyLiked) {
-        newLikedPosts.delete(postId);
-      } else {
-        newLikedPosts.add(postId);
-      }
-      return newLikedPosts;
+    if (!likedItems[stateKey]) {
+      console.error(`Invalid item type for liking: ${itemType}`);
+      return;
+    }
+    
+    setLikedItems(currentLiked => {
+        const newSet = new Set(currentLiked[stateKey]);
+        const isAlreadyLiked = newSet.has(itemId);
+        
+        const updateLikes = (items: any[]) => items.map(item =>
+            item.id === itemId ? { ...item, likes: item.likes + (isAlreadyLiked ? -1 : 1) } : item
+        );
+
+        if (itemType === 'post') setPosts(posts => updateLikes(posts));
+        else if (itemType === 'report') setReports(reports => updateLikes(reports));
+        else if (itemType === 'service') setServices(services => updateLikes(services));
+        else if (itemType === 'location') setLocations(locations => updateLikes(locations));
+
+        if (isAlreadyLiked) {
+            newSet.delete(itemId);
+        } else {
+            newSet.add(itemId);
+        }
+        return { ...currentLiked, [stateKey]: newSet };
     });
-  }, [likedPosts]);
-
-  const handleComment = useCallback((postId: string) => {
-    setPosts(currentPosts =>
-      currentPosts.map(post =>
-        post.id === postId ? { ...post, comments: post.comments + 1 } : post
-      )
-    );
-    alert('You added a comment! (UI placeholder)');
   }, []);
+
+
+  const handleOpenComments = useCallback((item: Post | Report | Service | Location, type: ItemType) => {
+    setCommentingItem({ item, type });
+  }, []);
+  
+  const handleAddNewComment = useCallback((text: string) => {
+    if (!commentingItem) return;
+
+    const newComment: Comment = {
+      id: `c${Date.now()}`,
+      user: currentUser,
+      text,
+      timestamp: new Date().toISOString(),
+    };
+
+    const { type, item } = commentingItem;
+
+    const addCommentToItem = (items: any[]) => items.map(i =>
+        i.id === item.id ? { ...i, comments: [...i.comments, newComment] } : i
+    );
+
+    if (type === 'post') setPosts(posts => addCommentToItem(posts));
+    else if (type === 'report') setReports(reports => addCommentToItem(reports));
+    else if (type === 'service') setServices(services => addCommentToItem(services));
+    else if (type === 'location') setLocations(locations => addCommentToItem(locations));
+    
+    setCommentingItem(prev => prev ? ({ ...prev, item: { ...prev.item, comments: [...prev.item.comments, newComment] }}) : null);
+
+  }, [commentingItem, currentUser]);
 
   const handleShare = useCallback(async (post: Post) => {
     const shareData = {
@@ -194,7 +310,7 @@ const App: React.FC = () => {
         image: `https://picsum.photos/seed/newpost${Date.now()}/600/600`,
         caption: caption,
         likes: 0,
-        comments: 0,
+        comments: [],
     };
 
     setPosts(currentPosts => [newPost, ...currentPosts]);
@@ -209,25 +325,25 @@ const App: React.FC = () => {
     setActiveStory(null);
   }, []);
 
-  const handleUpdateUser = useCallback((newName: string, newAvatar: string) => {
-    const updatedUser = { ...currentUser, name: newName, avatar: newAvatar };
+  const handleUpdateUser = useCallback((updatedData: Partial<User>) => {
+    const updatedUser = { ...currentUser, ...updatedData };
     setCurrentUser(updatedUser);
 
-    setPosts(currentPosts =>
-        currentPosts.map(post =>
-            post.user.id === currentUser.id
-                ? { ...post, user: { ...post.user, name: newName, avatar: newAvatar } }
-                : post
-        )
-    );
-
-    setStories(currentStories =>
-        currentStories.map(story =>
-            story.user.id === currentUser.id
-                ? { ...story, user: { ...story.user, name: newName, avatar: newAvatar } }
-                : story
-        )
-    );
+    if (updatedData.name || updatedData.avatar) {
+        const updateUserInItems = (items: any[]) => items.map(item => {
+            if (item.user?.id === currentUser.id) {
+                return { ...item, user: { ...item.user, name: updatedUser.name, avatar: updatedUser.avatar } };
+            }
+            if (item.comments?.length) {
+                return { ...item, comments: item.comments.map((c: Comment) => c.user.id === currentUser.id ? { ...c, user: { ...c.user, name: updatedUser.name, avatar: updatedUser.avatar }} : c) };
+            }
+            return item;
+        });
+        setPosts(updateUserInItems);
+        setReports(updateUserInItems);
+        setServices(updateUserInItems);
+        setStories(updateUserInItems);
+    }
     
     setCurrentView(View.Profile);
   }, [currentUser]);
@@ -265,10 +381,12 @@ const App: React.FC = () => {
     handleCloseModals();
   }, [handleCloseModals]);
 
-  const handleAddNewService = useCallback((newServiceData: Omit<Service, 'id' | 'user'>) => {
+  const handleAddNewService = useCallback((newServiceData: Omit<Service, 'id' | 'user' | 'likes' | 'comments'>) => {
     const newService: Service = {
         id: `service${Date.now()}`,
         user: currentUser,
+        likes: 0,
+        comments: [],
         ...newServiceData,
     };
     setServices(currentServices => [newService, ...currentServices]);
@@ -292,69 +410,143 @@ const App: React.FC = () => {
           lastMessage: `Group created by ${currentUser.name}`,
           time: '1s',
           unread: 0,
+          messages: [],
       };
 
       setConversations(prev => [newGroup, ...prev]);
-
-      const newNotifications: Notification[] = memberIds
-          .filter(id => id !== currentUser.id)
-          .map(id => ({
-              id: `noti-${newGroupId}-${id}`,
-              type: NotificationType.GroupInvite,
-              text: `${currentUser.name} invited you to join the group "${name}".`,
-              timestamp: new Date().toISOString(),
-              isRead: false,
-              relatedUser: { name: currentUser.name, avatar: currentUser.avatar },
-              groupId: newGroupId,
-              groupName: name,
-          }));
-
-      setNotifications(prev => [...newNotifications, ...prev]);
-
       setCurrentView(View.Messages);
 
   }, [currentUser]);
   
+    const handleViewConversation = useCallback((conversationId: string) => {
+        setActiveConversationId(conversationId);
+        setCurrentView(View.Chat);
+    }, []);
+
+    const handleSendMessage = useCallback((text: string) => {
+        if (!activeConversationId) return;
+
+        const newMessage: Message = {
+            id: `m${Date.now()}`,
+            user: currentUser,
+            text,
+            timestamp: new Date().toISOString(),
+        };
+
+        setConversations(currentConversations =>
+            currentConversations.map(c =>
+                c.id === activeConversationId
+                    ? { ...c, messages: [...c.messages, newMessage], lastMessage: text, time: '1s' }
+                    : c
+            )
+        );
+    }, [activeConversationId, currentUser]);
+
+    const handleDeleteConversation = useCallback((conversationId: string) => {
+        setConversations(current => current.filter(c => c.id !== conversationId));
+        closeConfirmation();
+    }, []);
+
   const handleAcceptInvite = useCallback((notificationId: string, groupId: string | undefined) => {
     if(!groupId) return;
-
-    // Add the current user to the group's member list
-    setConversations(prev => 
-        prev.map(c => 
-            c.id === groupId && !c.members.some(m => m.id === currentUser.id)
-                ? { ...c, members: [...c.members, currentUser] }
-                : c
-        )
-    );
-
-    // Remove the notification after handling it
-    setNotifications(prev => prev.filter(n => n.id !== notificationId));
-  }, [currentUser]);
-
-  const handleRejectInvite = useCallback((notificationId: string) => {
-    // Simply remove the notification
     setNotifications(prev => prev.filter(n => n.id !== notificationId));
   }, []);
 
+  const handleRejectInvite = useCallback((notificationId: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== notificationId));
+  }, []);
+
+    const handleDeletePet = useCallback((petId: string) => {
+        setCurrentUser(currentUser => ({
+            ...currentUser,
+            pets: currentUser.pets.filter(p => p.id !== petId),
+        }));
+        setPosts(currentPosts => currentPosts.filter(p => p.pet.id !== petId));
+        closeConfirmation();
+    }, []);
+
+    const handleDeletePost = useCallback((postId: string) => {
+        setPosts(currentPosts => currentPosts.filter(p => p.id !== postId));
+        closeConfirmation();
+    }, []);
+
+    const handleDeleteService = useCallback((serviceId: string) => {
+        setServices(currentServices => currentServices.filter(s => s.id !== serviceId));
+        closeConfirmation();
+    }, []);
+    
+    const handleNavigateToEditService = useCallback((service: Service) => {
+      setEditingService(service);
+      setCurrentView(View.EditService);
+    }, []);
+    
+    const handleUpdateService = useCallback((updatedService: Service) => {
+      setServices(currentServices =>
+        currentServices.map(s =>
+          s.id === updatedService.id ? updatedService : s
+        )
+      );
+      setEditingService(null);
+      setCurrentView(View.Profile);
+    }, []);
+
+    const handleDeleteReport = useCallback((reportId: string) => {
+        setReports(currentReports => currentReports.filter(r => r.id !== reportId));
+        closeConfirmation();
+    }, []);
+
   const renderView = () => {
+    const userServices = services.filter(s => s.user.id === currentUser.id);
+    const activeConversation = conversations.find(c => c.id === activeConversationId);
+
     switch (currentView) {
       case View.Home:
         return <HomeScreen 
             posts={posts} 
-            likedPosts={likedPosts} 
-            onLike={handleLike} 
-            onComment={handleComment} 
+            likedItems={likedItems}
+            onLike={handleLike}
+            onOpenComments={handleOpenComments}
             onShare={handleShare} 
             stories={stories} 
             onOpenStory={handleOpenStory} 
             onNewReport={handleOpenNewReport}
+            reports={reports}
+            currentUser={currentUser}
+            onDeleteReport={(reportId) => handleRequestDelete('Are you sure you want to delete this report?', () => handleDeleteReport(reportId))}
         />;
       case View.Map:
-        return <MapScreen services={services} />;
+        return <MapScreen 
+            services={services} 
+            locations={locations}
+            likedItems={likedItems} 
+            onLike={handleLike} 
+            onOpenComments={handleOpenComments}
+        />;
       case View.Messages:
-        return <MessagesScreen conversations={conversations} onNewGroup={() => setCurrentView(View.NewGroup)} />;
+        return <MessagesScreen 
+            conversations={conversations} 
+            onNewGroup={() => setCurrentView(View.NewGroup)}
+            onViewConversation={handleViewConversation}
+            onDeleteConversation={(convoId) => handleRequestDelete('Are you sure you want to delete this chat?', () => handleDeleteConversation(convoId))}
+        />;
       case View.Profile:
-        return <ProfileScreen user={currentUser} services={services.filter(s => s.user.id === currentUser.id)} onEdit={() => setCurrentView(View.EditProfile)} onEditPet={handleNavigateToEditPet} onViewPet={handleNavigateToPetDetail} />;
+        return <ProfileScreen 
+            user={currentUser} 
+            posts={posts}
+            services={userServices}
+            likedItems={likedItems}
+            onEdit={() => setCurrentView(View.EditProfile)} 
+            onEditPet={handleNavigateToEditPet} 
+            onViewPet={handleNavigateToPetDetail}
+            onEditService={handleNavigateToEditService}
+            onLike={handleLike}
+            onOpenComments={handleOpenComments}
+            onDeletePet={(petId) => handleRequestDelete('Are you sure you want to delete this pet? This will also remove all their posts.', () => handleDeletePet(petId))}
+            onDeleteService={(serviceId) => handleRequestDelete('Are you sure you want to delete this item?', () => handleDeleteService(serviceId))}
+            onDeletePost={(postId) => handleRequestDelete('Are you sure you want to delete this post?', () => handleDeletePost(postId))}
+            onLogout={handleLogout}
+            onDeleteAccount={() => handleRequestDelete('This will permanently delete your account and all your data. This action cannot be undone.', handleDeleteAccount, 'Delete Account')}
+         />;
       case View.EditProfile:
         return <EditProfileScreen user={currentUser} onUpdate={handleUpdateUser} onCancel={() => setCurrentView(View.Profile)} />;
       case View.EditPet:
@@ -363,6 +555,12 @@ const App: React.FC = () => {
             return null;
         }
         return <EditPetScreen pet={editingPet} onUpdate={handleUpdatePet} onCancel={() => setCurrentView(View.Profile)} />;
+      case View.EditService:
+        if (!editingService) {
+            setCurrentView(View.Profile);
+            return null;
+        }
+        return <EditServiceScreen service={editingService} onUpdate={handleUpdateService} onCancel={() => setCurrentView(View.Profile)} />;
       case View.PetDetail:
         if (!viewingPet) {
             setCurrentView(View.Profile);
@@ -371,16 +569,30 @@ const App: React.FC = () => {
         return <PetDetailScreen pet={viewingPet} onBack={() => setCurrentView(View.Profile)} />;
       case View.NewGroup:
           return <NewGroupScreen onCancel={() => setCurrentView(View.Messages)} onCreate={handleCreateGroup} users={allUsers.filter(u => u.id !== currentUser.id)} />;
+      case View.Chat:
+          if (!activeConversation) {
+              setCurrentView(View.Messages);
+              return null;
+          }
+          return <ChatScreen 
+                    conversation={activeConversation} 
+                    currentUser={currentUser} 
+                    onBack={() => setCurrentView(View.Messages)} 
+                    onSendMessage={handleSendMessage}
+                 />;
       default:
         return <HomeScreen 
             posts={posts} 
-            likedPosts={likedPosts} 
-            onLike={handleLike} 
-            onComment={handleComment} 
+            likedItems={likedItems}
+            onLike={handleLike}
+            onOpenComments={handleOpenComments}
             onShare={handleShare} 
             stories={stories} 
             onOpenStory={handleOpenStory}
             onNewReport={handleOpenNewReport}
+            reports={reports}
+            currentUser={currentUser}
+            onDeleteReport={(reportId) => handleRequestDelete('Are you sure you want to delete this report?', () => handleDeleteReport(reportId))}
         />;
     }
   };
@@ -433,6 +645,24 @@ const App: React.FC = () => {
       {activeModal === 'new_pet' && <NewPetScreen onClose={handleCloseModals} onAddPet={handleAddNewPet} />}
       {activeModal === 'new_service' && <NewServiceScreen onClose={handleCloseModals} onAddService={handleAddNewService} />}
       {activeStory && <StoryViewer story={activeStory} onClose={handleCloseStory} />}
+      {commentingItem && (
+          <CommentModal 
+            item={commentingItem.item}
+            itemType={commentingItem.type}
+            currentUser={currentUser}
+            onClose={handleCloseModals}
+            onAddComment={handleAddNewComment}
+          />
+      )}
+      {confirmation.isOpen && (
+        <ConfirmationModal
+            isOpen={confirmation.isOpen}
+            message={confirmation.message}
+            confirmText={confirmation.confirmText}
+            onConfirm={confirmation.onConfirm}
+            onCancel={closeConfirmation}
+        />
+      )}
     </div>
   );
 };

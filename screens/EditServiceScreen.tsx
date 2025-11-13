@@ -1,25 +1,26 @@
 import React, { useState } from 'react';
 import { XIcon, CameraIcon } from '../components/icons';
-import { ServiceType } from '../types';
+import { Service, ServiceType } from '../types';
 
-interface NewServiceScreenProps {
-  onClose: () => void;
-  onAddService: (data: { name: string; description: string; price: string; type: ServiceType; image: string; address: string; }) => void;
+interface EditServiceScreenProps {
+  service: Service;
+  onCancel: () => void;
+  onUpdate: (service: Service) => void;
 }
 
-const NewServiceScreen: React.FC<NewServiceScreenProps> = ({ onClose, onAddService }) => {
-    const [name, setName] = useState('');
-    const [description, setDescription] = useState('');
-    const [price, setPrice] = useState('');
-    const [type, setType] = useState<ServiceType>(ServiceType.Product);
-    const [address, setAddress] = useState('');
-    const [image, setImage] = useState<string | null>(null);
+const EditServiceScreen: React.FC<EditServiceScreenProps> = ({ service, onCancel, onUpdate }) => {
+    const [name, setName] = useState(service.name);
+    const [description, setDescription] = useState(service.description);
+    const [price, setPrice] = useState(service.price);
+    const [type, setType] = useState<ServiceType>(service.type);
+    const [address, setAddress] = useState(service.address);
+    const [image, setImage] = useState<string | null>(service.image);
 
-    const canPost = name.trim() !== '' && description.trim() !== '' && price.trim() !== '' && address.trim() !== '' && image !== null;
+    const canUpdate = name.trim() !== '' && description.trim() !== '' && price.trim() !== '' && address.trim() !== '' && image !== null;
 
-    const handlePost = () => {
-        if (canPost) {
-            onAddService({ name, description, price, type, image, address });
+    const handleUpdate = () => {
+        if (canUpdate) {
+            onUpdate({ ...service, name, description, price, type, image, address });
         }
     };
 
@@ -28,24 +29,23 @@ const NewServiceScreen: React.FC<NewServiceScreenProps> = ({ onClose, onAddServi
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-end md:items-center md:justify-center p-0 md:p-4">
-             <div className="absolute inset-0 bg-black/40" onClick={onClose}></div>
-             <div className="relative w-full bg-slate-50 rounded-t-2xl flex flex-col h-[90vh]
-                            md:max-w-lg md:h-auto md:max-h-[90vh] md:rounded-2xl md:shadow-xl animate-modal-entry">
-            <header className="flex-shrink-0 bg-white/80 backdrop-blur-lg z-10 shadow-sm p-3 flex items-center justify-between md:rounded-t-2xl">
-                    <button onClick={onClose} className="p-2 text-slate-600 hover:bg-slate-100 rounded-full">
-                        <XIcon className="w-6 h-6" />
+        <div className="fixed inset-0 bg-slate-50 z-50 flex flex-col">
+            <header className="bg-white/80 backdrop-blur-lg sticky top-0 z-20 shadow-sm">
+                <div className="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
+                    <button onClick={onCancel} className="p-2 text-slate-600 hover:bg-slate-100 rounded-full">
+                        <XIcon className="w-7 h-7" />
                     </button>
-                    <h2 className="text-lg font-bold text-slate-800">New Product/Service</h2>
+                    <h2 className="text-xl font-bold text-slate-800">Edit Product/Service</h2>
                     <button 
-                        onClick={handlePost}
-                        disabled={!canPost}
-                        className="bg-orange-500 text-white font-bold py-1.5 px-4 rounded-lg text-sm hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={handleUpdate}
+                        disabled={!canUpdate}
+                        className="bg-orange-500 text-white font-bold py-2 px-5 rounded-lg text-sm hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        Post
+                        Save
                     </button>
-                </header>
-                <main className="flex-grow overflow-y-auto p-4 space-y-4">
+                </div>
+            </header>
+            <main className="flex-grow max-w-md w-full mx-auto p-4 space-y-4 overflow-y-auto">
                 <div 
                     onClick={handleImageUpload}
                     className="aspect-video w-full bg-slate-200 border-2 border-dashed border-slate-300 rounded-2xl flex flex-col items-center justify-center text-slate-500 cursor-pointer hover:bg-slate-300 transition-colors overflow-hidden"
@@ -84,28 +84,7 @@ const NewServiceScreen: React.FC<NewServiceScreenProps> = ({ onClose, onAddServi
                 </div>
             </main>
         </div>
-      <style>{`
-        @keyframes slide-up {
-          from { transform: translateY(100%); }
-          to { transform: translateY(0); }
-        }
-        @keyframes fade-in-scale {
-          from { opacity: 0; transform: scale(0.95); }
-          to { opacity: 1; transform: scale(1); }
-        }
-        
-        .animate-modal-entry {
-          animation: slide-up 0.3s ease-out;
-        }
-
-        @media (min-width: 768px) {
-          .animate-modal-entry {
-            animation: fade-in-scale 0.2s ease-out;
-          }
-        }
-      `}</style>
-    </div>
     );
 };
 
-export default NewServiceScreen;
+export default EditServiceScreen;

@@ -7,8 +7,10 @@ export enum View {
   Profile = 'PROFILE',
   EditProfile = 'EDIT_PROFILE',
   EditPet = 'EDIT_PET',
+  EditService = 'EDIT_SERVICE',
   PetDetail = 'PET_DETAIL',
   NewGroup = 'NEW_GROUP',
+  Chat = 'CHAT',
 }
 
 export enum NotificationType {
@@ -47,6 +49,17 @@ export interface User {
   name:string;
   avatar: string;
   pets: Pet[];
+  bio?: string;
+  location?: string;
+  email?: string;
+  phone?: string;
+}
+
+export interface Comment {
+  id: string;
+  user: User;
+  text: string;
+  timestamp: string; // ISO string
 }
 
 export interface Post {
@@ -56,7 +69,7 @@ export interface Post {
   image: string;
   caption: string;
   likes: number;
-  comments: number;
+  comments: Comment[];
 }
 
 export interface Story {
@@ -64,6 +77,13 @@ export interface Story {
   user: User;
   image: string;
   timestamp: string; // ISO string
+}
+
+export interface Message {
+    id: string;
+    user: User;
+    text: string;
+    timestamp: string; // ISO string
 }
 
 export interface Conversation {
@@ -75,6 +95,7 @@ export interface Conversation {
     unread: number;
     isGroup: boolean;
     members: User[];
+    messages: Message[];
 }
 
 export type ReportStatus = 'Lost' | 'Found' | 'Adoption';
@@ -88,6 +109,9 @@ export interface Report {
   image: string;
   breed: string;
   description?: string;
+  user?: User;
+  likes: number;
+  comments: Comment[];
 }
 
 export enum ServiceType {
@@ -104,4 +128,18 @@ export interface Service {
     type: ServiceType;
     image: string;
     address: string;
+    likes: number;
+    comments: Comment[];
+}
+
+export interface Location {
+  id: string;
+  name: string;
+  category: string;
+  address: string;
+  distance: string;
+  image: string;
+  likes: number;
+  comments: Comment[];
+  isBusinessService: boolean;
 }
