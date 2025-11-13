@@ -1,6 +1,8 @@
 
+
 import React, { useState, useMemo } from 'react';
 import { DirectionsIcon, SearchIcon, StorefrontIcon } from '../components/icons';
+import { Service } from '../types';
 
 type LocationType = 'places' | 'services';
 
@@ -60,13 +62,28 @@ const LocationCard: React.FC<{ location: Location }> = ({ location }) => {
     );
 };
 
+interface MapScreenProps {
+    services: Service[];
+}
 
-const MapScreen: React.FC = () => {
+const MapScreen: React.FC<MapScreenProps> = ({ services }) => {
     const [activeTab, setActiveTab] = useState<LocationType>('places');
     const [searchQuery, setSearchQuery] = useState('');
 
     const filteredLocations = useMemo(() => {
-        const sourceLocations = activeTab === 'places' ? petFriendlyPlaces : petServices;
+        const userServicesAsLocations: Location[] = services.map(service => ({
+            id: service.id,
+            name: service.name,
+            category: `${service.type} by ${service.user.name}`,
+            address: service.address,
+            distance: 'N/A', // Distance is not available for user services
+            image: service.image,
+        }));
+
+        const sourceLocations = activeTab === 'places' 
+            ? petFriendlyPlaces 
+            : [...petServices, ...userServicesAsLocations];
+
         if (!searchQuery) {
             return sourceLocations;
         }
@@ -75,7 +92,7 @@ const MapScreen: React.FC = () => {
             location.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
             location.address.toLowerCase().includes(searchQuery.toLowerCase())
         );
-    }, [activeTab, searchQuery]);
+    }, [activeTab, searchQuery, services]);
 
 
     return (
