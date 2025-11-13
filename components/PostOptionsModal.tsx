@@ -1,11 +1,13 @@
 import React from 'react';
-import { CameraIcon, DocumentReportIcon, XIcon, UserGroupIcon } from './icons';
+import { CameraIcon, DocumentReportIcon, XIcon, UserGroupIcon, UserPlusIcon, StorefrontIcon } from './icons';
 
 interface PostOptionsModalProps {
   onClose: () => void;
   onNewPost: () => void;
   onNewReport: () => void;
   onNewGroup: () => void;
+  onNewPet: () => void;
+  onNewService: () => void;
 }
 
 const OptionButton: React.FC<{
@@ -26,7 +28,7 @@ const OptionButton: React.FC<{
   </button>
 );
 
-const PostOptionsModal: React.FC<PostOptionsModalProps> = ({ onClose, onNewPost, onNewReport, onNewGroup }) => {
+const PostOptionsModal: React.FC<PostOptionsModalProps> = ({ onClose, onNewPost, onNewReport, onNewGroup, onNewPet, onNewService }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-end">
       <div className="absolute inset-0 bg-black/40" onClick={onClose}></div>
@@ -44,6 +46,20 @@ const PostOptionsModal: React.FC<PostOptionsModalProps> = ({ onClose, onNewPost,
                 label="New Post"
                 iconBgColor="bg-orange-100"
                 iconTextColor="text-orange-500"
+            />
+            <OptionButton
+                onClick={onNewPet}
+                icon={<UserPlusIcon className="w-7 h-7" />}
+                label="Add Pet"
+                iconBgColor="bg-green-100"
+                iconTextColor="text-green-500"
+            />
+            <OptionButton
+                onClick={onNewService}
+                icon={<StorefrontIcon className="w-7 h-7" />}
+                label="Sell Product/Service"
+                iconBgColor="bg-cyan-100"
+                iconTextColor="text-cyan-500"
             />
             <OptionButton
                 onClick={onNewReport}

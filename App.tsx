@@ -6,7 +6,7 @@ import MessagesScreen from './screens/MessagesScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import BottomNav from './components/BottomNav';
 import { PawPrintIcon, BellIcon } from './components/icons';
-import { View, Notification, NotificationType, Post, User, Pet, Story, Conversation } from './types';
+import { View, Notification, NotificationType, Post, User, Pet, Story, Conversation, Service, ServiceType } from './types';
 import NotificationsPanel from './components/NotificationsPanel';
 import PostOptionsModal from './components/PostOptionsModal';
 import NewPostScreen from './screens/NewPostScreen';
@@ -16,6 +16,8 @@ import EditProfileScreen from './screens/EditProfileScreen';
 import EditPetScreen from './screens/EditPetScreen';
 import PetDetailScreen from './screens/PetDetailScreen';
 import NewGroupScreen from './screens/NewGroupScreen';
+import NewPetScreen from './screens/NewPetScreen';
+import NewServiceScreen from './screens/NewServiceScreen';
 
 const mockNotificationsData: Notification[] = [
   { id: 'n1', type: NotificationType.NewMessage, text: 'Maria sent you a message about Lucy.', timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(), isRead: false, relatedUser: { name: 'Maria', avatar: 'https://picsum.photos/seed/user2/100/100' } },
@@ -61,7 +63,31 @@ const initialConversations: Conversation[] = [
     { id: 'c3', name: 'John Doe', avatar: 'https://picsum.photos/seed/user3/100/100', lastMessage: 'Thanks for the tip!', time: '3h', unread: 0, isGroup: false, members: [allUsers[0], allUsers[2]] },
 ];
 
-type ActiveModal = 'none' | 'options' | 'post' | 'report';
+const initialServices: Service[] = [
+    {
+        id: 'serv1',
+        user: initialUser,
+        name: 'Dog Walking Adventures',
+        description: 'Daily walks for your furry friend in local parks. Group and individual walks available. Insured and certified.',
+        price: '$25 / hour',
+        type: ServiceType.Service,
+        image: 'https://picsum.photos/seed/walking/600/400',
+        address: '100 Good Boy Lane, Petville'
+    },
+    {
+        id: 'serv2',
+        user: initialUser,
+        name: 'Handmade Pet Bandanas',
+        description: 'Custom, high-quality bandanas in various patterns and sizes. Perfect for any occasion!',
+        price: '$15',
+        type: ServiceType.Product,
+        image: 'https://picsum.photos/seed/bandana/600/400',
+        address: 'Online Store, ships from Petville'
+    }
+];
+
+
+type ActiveModal = 'none' | 'options' | 'post' | 'report' | 'new_pet' | 'new_service';
 
 const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -81,6 +107,7 @@ const App: React.FC = () => {
   const [viewingPet, setViewingPet] = useState<Pet | null>(null);
 
   const [conversations, setConversations] = useState<Conversation[]>(initialConversations);
+  const [services, setServices] = useState<Service[]>(initialServices);
 
   const handleLogin = useCallback(() => {
     setIsLoggedIn(true);
@@ -101,6 +128,8 @@ const App: React.FC = () => {
   const handleOpenOptions = useCallback(() => setActiveModal('options'), []);
   const handleOpenNewPost = useCallback(() => { setActiveModal('post') }, []);
   const handleOpenNewReport = useCallback(() => { setActiveModal('report') }, []);
+  const handleOpenNewPet = useCallback(() => { setActiveModal('new_pet') }, []);
+  const handleOpenNewService = useCallback(() => { setActiveModal('new_service') }, []);
   const handleOpenNewGroup = useCallback(() => {
     setActiveModal('none');
     setCurrentView(View.NewGroup);
@@ -223,6 +252,28 @@ const App: React.FC = () => {
     setEditingPet(null);
     setCurrentView(View.Profile);
   }, [currentUser]);
+  
+  const handleAddNewPet = useCallback((newPet: Omit<Pet, 'id'>) => {
+    const petWithId: Pet = {
+        ...newPet,
+        id: `p${Date.now()}`,
+    };
+    setCurrentUser(currentUser => ({
+        ...currentUser,
+        pets: [...currentUser.pets, petWithId]
+    }));
+    handleCloseModals();
+  }, [handleCloseModals]);
+
+  const handleAddNewService = useCallback((newServiceData: Omit<Service, 'id' | 'user'>) => {
+    const newService: Service = {
+        id: `service${Date.now()}`,
+        user: currentUser,
+        ...newServiceData,
+    };
+    setServices(currentServices => [newService, ...currentServices]);
+    handleCloseModals();
+  }, [currentUser, handleCloseModals]);
 
   const handleNavigateToPetDetail = useCallback((pet: Pet) => {
     setViewingPet(pet);
@@ -299,11 +350,11 @@ const App: React.FC = () => {
             onNewReport={handleOpenNewReport}
         />;
       case View.Map:
-        return <MapScreen />;
+        return <MapScreen services={services} />;
       case View.Messages:
         return <MessagesScreen conversations={conversations} onNewGroup={() => setCurrentView(View.NewGroup)} />;
       case View.Profile:
-        return <ProfileScreen user={currentUser} onEdit={() => setCurrentView(View.EditProfile)} onEditPet={handleNavigateToEditPet} onViewPet={handleNavigateToPetDetail} />;
+        return <ProfileScreen user={currentUser} services={services.filter(s => s.user.id === currentUser.id)} onEdit={() => setCurrentView(View.EditProfile)} onEditPet={handleNavigateToEditPet} onViewPet={handleNavigateToPetDetail} />;
       case View.EditProfile:
         return <EditProfileScreen user={currentUser} onUpdate={handleUpdateUser} onCancel={() => setCurrentView(View.Profile)} />;
       case View.EditPet:
@@ -339,43 +390,48 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
-      <header className="bg-white/80 backdrop-blur-lg sticky top-0 z-20 shadow-sm">
-        <div className="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-                <PawPrintIcon className="w-8 h-8" />
-                <h1 className="text-2xl font-extrabold text-orange-500">PetConnect</h1>
-            </div>
-            <div className="flex items-center gap-2">
-                <div className="relative">
-                    <button onClick={handleToggleNotifications} className="p-2 text-slate-600 hover:text-orange-500 transition-colors rounded-full hover:bg-slate-100">
-                        <BellIcon className="w-7 h-7" />
-                        {hasUnreadNotifications && (
-                            <span className="absolute top-2 right-2 block w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
-                        )}
-                    </button>
-                </div>
-                <button onClick={() => setCurrentView(View.Profile)} className="w-9 h-9 rounded-full overflow-hidden border-2 border-slate-200 hover:border-orange-400 transition-colors">
-                    <img src={currentUser.avatar} alt="User Profile" className="w-full h-full object-cover" />
-                </button>
-            </div>
-        </div>
-      </header>
-      {isNotificationsOpen && <NotificationsPanel notifications={notifications} onClose={() => setIsNotificationsOpen(false)} onAcceptInvite={handleAcceptInvite} onRejectInvite={handleRejectInvite} />}
-      
-      {/* This container ensures modals don't interfere with main content's scroll */}
-      <div className="relative flex-grow max-w-md w-full mx-auto">
-        <main className="pb-20">
-          {renderView()}
-        </main>
-      </div>
-
-      {/* Place Modals and BottomNav outside the main scrollable container */}
+    <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row">
       <BottomNav currentView={currentView} setCurrentView={setCurrentView} onOpenOptions={handleOpenOptions} />
       
-      {activeModal === 'options' && <PostOptionsModal onClose={handleCloseModals} onNewPost={handleOpenNewPost} onNewReport={handleOpenNewReport} onNewGroup={handleOpenNewGroup} />}
+      <div className="flex-1 flex flex-col min-w-0">
+        <header className="bg-white/80 backdrop-blur-lg sticky top-0 z-20 shadow-sm md:relative md:shadow-none md:border-b md:border-slate-200">
+          <div className="max-w-md mx-auto px-4 py-3 flex items-center justify-between md:max-w-5xl">
+              <div className="flex items-center gap-2">
+                  <PawPrintIcon className="w-8 h-8" />
+                  <h1 className="text-2xl font-extrabold text-orange-500">PetConnect</h1>
+              </div>
+              <div className="flex items-center gap-2">
+                  <div className="relative">
+                      <button onClick={handleToggleNotifications} className="p-2 text-slate-600 hover:text-orange-500 transition-colors rounded-full hover:bg-slate-100">
+                          <BellIcon className="w-7 h-7" />
+                          {hasUnreadNotifications && (
+                              <span className="absolute top-2 right-2 block w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+                          )}
+                      </button>
+                  </div>
+                  <button onClick={() => setCurrentView(View.Profile)} className="w-9 h-9 rounded-full overflow-hidden border-2 border-slate-200 hover:border-orange-400 transition-colors">
+                      <img src={currentUser.avatar} alt="User Profile" className="w-full h-full object-cover" />
+                  </button>
+              </div>
+          </div>
+        </header>
+
+        <div className="relative flex-grow">
+          {isNotificationsOpen && <NotificationsPanel notifications={notifications} onClose={() => setIsNotificationsOpen(false)} onAcceptInvite={handleAcceptInvite} onRejectInvite={handleRejectInvite} />}
+          
+          <main className="pb-20 md:pb-4">
+             <div className="max-w-md mx-auto md:max-w-3xl lg:max-w-4xl py-4 md:py-6">
+              {renderView()}
+            </div>
+          </main>
+        </div>
+      </div>
+      
+      {activeModal === 'options' && <PostOptionsModal onClose={handleCloseModals} onNewPost={handleOpenNewPost} onNewPet={handleOpenNewPet} onNewReport={handleOpenNewReport} onNewGroup={handleOpenNewGroup} onNewService={handleOpenNewService} />}
       {activeModal === 'post' && <NewPostScreen onClose={handleCloseModals} onAddNewPost={handleAddNewPost} pets={currentUser.pets} />}
       {activeModal === 'report' && <NewReportScreen onClose={handleCloseModals} />}
+      {activeModal === 'new_pet' && <NewPetScreen onClose={handleCloseModals} onAddPet={handleAddNewPet} />}
+      {activeModal === 'new_service' && <NewServiceScreen onClose={handleCloseModals} onAddService={handleAddNewService} />}
       {activeStory && <StoryViewer story={activeStory} onClose={handleCloseStory} />}
     </div>
   );

@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
-import { Pet, User } from '../types';
-import { PencilIcon } from '../components/icons';
+import { Pet, User, Service } from '../types';
+import { PencilIcon, StorefrontIcon } from '../components/icons';
 
 const mockPosts = [
     { id: 'post1', image: 'https://picsum.photos/seed/post1/300/300' },
@@ -8,6 +8,8 @@ const mockPosts = [
     { id: 'post4', image: 'https://picsum.photos/seed/post4/300/300' },
     { id: 'post5', image: 'https://picsum.photos/seed/post5/300/300' },
     { id: 'post6', image: 'https://picsum.photos/seed/post6/300/300' },
+    { id: 'post7', image: 'https://picsum.photos/seed/post7/300/300' },
+    { id: 'post8', image: 'https://picsum.photos/seed/post8/300/300' },
 ];
 
 const PetCard: React.FC<{ pet: Pet; onEdit: () => void; onView: () => void; }> = ({ pet, onEdit, onView }) => {
@@ -35,17 +37,35 @@ const PetCard: React.FC<{ pet: Pet; onEdit: () => void; onView: () => void; }> =
     );
 }
 
+const ServiceCard: React.FC<{ service: Service }> = ({ service }) => {
+    return (
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col">
+            <img src={service.image} alt={service.name} className="w-full h-32 object-cover" />
+            <div className="p-3 flex-grow flex flex-col">
+                <h4 className="font-bold text-slate-800">{service.name}</h4>
+                <p className="text-xs text-slate-500 mt-1 flex-grow line-clamp-2">{service.description}</p>
+                <div className="mt-2 flex justify-between items-center">
+                    <span className={`text-xs font-bold px-2 py-1 rounded-full ${service.type === 'Service' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>{service.type}</span>
+                    <span className="font-bold text-orange-600">{service.price}</span>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 interface ProfileScreenProps {
     user: User;
+    services: Service[];
     onEdit: () => void;
     onEditPet: (pet: Pet) => void;
     onViewPet: (pet: Pet) => void;
 }
 
-const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onEdit, onEditPet, onViewPet }) => {
+const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, services, onEdit, onEditPet, onViewPet }) => {
     const [isFollowing, setIsFollowing] = useState(false);
     const [followerCount, setFollowerCount] = useState(1200);
     const mockFollowingCount = 340;
+    const [activeTab, setActiveTab] = useState<'posts' | 'services'>('posts');
 
     const handleFollowToggle = useCallback(() => {
         setIsFollowing(current => {
@@ -56,46 +76,48 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onEdit, onEditPet, 
     }, []);
 
     return (
-        <div className="p-4 space-y-6">
-            <div className="flex flex-col items-center">
-                <img src={user.avatar} alt={user.name} className="w-28 h-28 rounded-full border-4 border-orange-400 shadow-lg" />
-                <div className="flex items-center gap-2 mt-3">
-                    <h2 className="text-2xl font-bold text-slate-800">{user.name}</h2>
-                    <button onClick={onEdit} className="p-2 text-slate-500 hover:text-orange-500 hover:bg-slate-100 rounded-full transition-colors">
-                        <PencilIcon className="w-5 h-5" />
-                    </button>
-                </div>
-                <div className="flex gap-8 mt-2 text-center">
-                    <div>
-                        <p className="font-bold text-lg text-slate-700">{user.pets.length}</p>
-                        <p className="text-sm text-slate-500">Pets</p>
+        <div className="space-y-6 md:space-y-8">
+            <div className="flex flex-col items-center md:flex-row md:items-start md:gap-10">
+                <img src={user.avatar} alt={user.name} className="w-28 h-28 md:w-40 md:h-40 rounded-full border-4 border-orange-400 shadow-lg flex-shrink-0" />
+                <div className="flex flex-col items-center md:items-start flex-grow">
+                    <div className="flex items-center gap-2 mt-3">
+                        <h2 className="text-2xl md:text-3xl font-bold text-slate-800">{user.name}</h2>
+                        <button onClick={onEdit} className="p-2 text-slate-500 hover:text-orange-500 hover:bg-slate-100 rounded-full transition-colors">
+                            <PencilIcon className="w-5 h-5" />
+                        </button>
                     </div>
-                     <div>
-                        <p className="font-bold text-lg text-slate-700">{followerCount.toLocaleString()}</p>
-                        <p className="text-sm text-slate-500">Followers</p>
+                    <div className="flex gap-8 mt-3 text-center">
+                        <div>
+                            <p className="font-bold text-lg md:text-xl text-slate-700">{user.pets.length}</p>
+                            <p className="text-sm text-slate-500">Pets</p>
+                        </div>
+                         <div>
+                            <p className="font-bold text-lg md:text-xl text-slate-700">{followerCount.toLocaleString()}</p>
+                            <p className="text-sm text-slate-500">Followers</p>
+                        </div>
+                         <div>
+                            <p className="font-bold text-lg md:text-xl text-slate-700">{mockFollowingCount.toLocaleString()}</p>
+                            <p className="text-sm text-slate-500">Following</p>
+                        </div>
                     </div>
-                     <div>
-                        <p className="font-bold text-lg text-slate-700">{mockFollowingCount.toLocaleString()}</p>
-                        <p className="text-sm text-slate-500">Following</p>
+                    <div className="mt-4 w-full max-w-xs md:max-w-none">
+                        <button
+                            onClick={handleFollowToggle}
+                            className={`w-full font-bold py-2.5 px-4 rounded-xl transition-colors duration-200 ease-in-out ${
+                                isFollowing
+                                    ? 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                                    : 'bg-orange-500 text-white hover:bg-orange-600 shadow-md shadow-orange-500/20'
+                            }`}
+                        >
+                            {isFollowing ? 'Following' : 'Follow'}
+                        </button>
                     </div>
-                </div>
-                <div className="mt-4 w-full">
-                    <button
-                        onClick={handleFollowToggle}
-                        className={`w-full font-bold py-2.5 px-4 rounded-xl transition-colors duration-200 ease-in-out ${
-                            isFollowing
-                                ? 'bg-slate-200 text-slate-700 hover:bg-slate-300'
-                                : 'bg-orange-500 text-white hover:bg-orange-600 shadow-md shadow-orange-500/20'
-                        }`}
-                    >
-                        {isFollowing ? 'Following' : 'Follow'}
-                    </button>
                 </div>
             </div>
 
             <div>
                 <h3 className="text-lg font-bold text-slate-700 mb-2">My Pets</h3>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {user.pets.map((pet, index) => (
                         <div 
                             key={pet.id} 
@@ -109,15 +131,39 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onEdit, onEditPet, 
             </div>
 
             <div>
-                <h3 className="text-lg font-bold text-slate-700 mb-2">My Posts</h3>
-                <div className="grid grid-cols-3 gap-1">
-                    {mockPosts.map((post) => (
-                        <div key={post.id} className="aspect-square bg-gray-200 rounded-md overflow-hidden">
-                            <img src={post.image} alt="User post" className="w-full h-full object-cover" />
-                        </div>
-                    ))}
+                <div className="flex bg-slate-100 rounded-lg p-1 mb-4">
+                    <button onClick={() => setActiveTab('posts')} className={`w-1/2 py-2 rounded-md text-sm font-semibold transition-colors ${activeTab === 'posts' ? 'bg-white shadow text-orange-600' : 'text-slate-600'}`}>
+                        My Posts
+                    </button>
+                    <button onClick={() => setActiveTab('services')} className={`w-1/2 py-2 rounded-md text-sm font-semibold transition-colors ${activeTab === 'services' ? 'bg-white shadow text-orange-600' : 'text-slate-600'}`}>
+                        Services & Products
+                    </button>
                 </div>
+                
+                {activeTab === 'posts' && (
+                    <div className="grid grid-cols-3 lg:grid-cols-4 gap-1">
+                        {mockPosts.map((post) => (
+                            <div key={post.id} className="aspect-square bg-gray-200 rounded-md overflow-hidden">
+                                <img src={post.image} alt="User post" className="w-full h-full object-cover" />
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {activeTab === 'services' && (
+                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        {services.length > 0 ? (
+                            services.map(service => <ServiceCard key={service.id} service={service} />)
+                        ) : (
+                            <div className="col-span-full text-center py-8 text-slate-500">
+                                <StorefrontIcon className="w-12 h-12 mx-auto text-slate-300 mb-2" />
+                                <p>No services or products listed yet.</p>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
+
             <style>{`
                 @keyframes fadeInUp {
                     from {

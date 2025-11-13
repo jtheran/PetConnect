@@ -44,8 +44,9 @@ const timeAgo = (dateString: string): string => {
 const NotificationsPanel: React.FC<NotificationsPanelProps> = ({ notifications, onClose, onAcceptInvite, onRejectInvite }) => {
     return (
         <>
-            <div className="fixed inset-0 bg-black/30 z-40" onClick={onClose}></div>
-            <div className="absolute top-16 right-0 left-0 max-w-md mx-auto z-50 px-4">
+            <div className="fixed inset-0 bg-black/30 z-40 md:hidden" onClick={onClose}></div>
+            <div className="absolute top-16 right-0 left-0 max-w-md mx-auto z-50 px-4 
+                            md:right-4 md:left-auto md:mx-0 md:max-w-sm md:px-0">
                 <div className="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
                     <div className="p-4 border-b border-slate-200">
                         <h3 className="font-bold text-slate-800 text-lg">Notifications</h3>

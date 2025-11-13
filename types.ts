@@ -89,3 +89,19 @@ export interface Report {
   breed: string;
   description?: string;
 }
+
+export enum ServiceType {
+    Service = 'Service',
+    Product = 'Product',
+}
+
+export interface Service {
+    id: string;
+    user: User;
+    name: string;
+    description: string;
+    price: string;
+    type: ServiceType;
+    image: string;
+    address: string;
+}
